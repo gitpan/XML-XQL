@@ -23,6 +23,8 @@ Usage: $0 XQL-query-expr [ options ] [ file ... ]
     -o expr:	Reorder argument group (when using -f), e.g. '1-3,0,4'
     -h format:	When printing results, print a header for each file
 		(uses printf, so use %s to print the filename)
+    -H format:	Same as -h, but does not print a header if no results
+		were found in the file
     -s format:	Record header for each result or result set (for -h)
 		(uses printf, use %d to fill in record number (base is 0))
     -n:		Don't print newline after each result (when not using -f or -m)
@@ -49,6 +51,8 @@ Usage: $0 XQL-query-expr [ options ] [ file ... ]
 	Nrx	Shortcut for ErxArTr (N is optional)
 END_USAGE
 
+# Leave this comment to de-confuse Emacs';
+
 use XML::XQL;
 use XML::XQL::DOM;
 
@@ -62,7 +66,7 @@ my $query_expr = shift @ARGV;
 $opt_m = $opt_n = $opt_r = undef;	# disable warnings with -w
 
 use Getopt::Std;
-getopts ("mrb:f:a:h:s:nc:p:o:");
+getopts ("mrb:f:a:h:H:s:nc:p:o:");
 
 my @options = ();
 
@@ -83,6 +87,7 @@ sub extrapolate
 
 # Replace "\n" with newline etc.
 $opt_h = extrapolate ($opt_h) if defined ($opt_h);
+$opt_h = extrapolate ($opt_H) if defined ($opt_H);
 $opt_s = extrapolate ($opt_s) if defined ($opt_s);
 $opt_f = extrapolate ($opt_f) if defined ($opt_f);
 
@@ -297,7 +302,9 @@ sub solveQuery
 	# transform query results
 	@result = map { transform ($_) } @result;
 
-	printf ($opt_h, $file) if $opt_h;		# print file header
+	# print file header 
+	# (don't print it if -H was specified and no results were found)
+	printf ($opt_h, $file) if $opt_h && (!$opt_H || @result);
 
 	if ($opt_f)
 	{
@@ -335,10 +342,12 @@ if (@ARGV)
 	    next;
 	}
 	solveQuery ($dom, $file);
+	$dom->dispose;
     }
 }
 else	# read from STDIN
 {
     my $dom = $parser->parse (*STDIN);
     solveQuery ($dom, "(input)");
+    $dom->dispose;
 }

@@ -30,6 +30,7 @@ t/new.t
 t/once.t
 t/precedes.t
 t/recurse.t
+t/recurse2.t
 t/sin2.t
 t/subscript.t
 t/subscript2.t

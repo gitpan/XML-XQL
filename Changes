@@ -1,3 +1,11 @@
+0.61 (enno) 8/2/1999
+- Added -H option to xql.pl, which is similar to -h, but it doesn't print a 
+  file header when there are no query results for that file.
+- Fixed memory leak in xql.pl. It wasn't calling dispose on the XML::DOM
+  document after it was done processing it, causing it to run out of memory
+  when processing a lot of files.
+- Fixed the regular expressions for XML tokens to include Unicode values > 127
+
 0.60 (enno) 3/19/1999
 - Fixed $lt$ and $ilt$ (operator '<' was working fine)
   (Thanks again, Ingo)
