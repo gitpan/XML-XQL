@@ -1,7 +1,6 @@
 Changes
 Makefile.PL
 MANIFEST
-test.pl
 lib/XML/XQL.pm
 XQLParser/Makefile.PL
 XQLParser/Parser.pm             Parser for XML::XQL expressions
