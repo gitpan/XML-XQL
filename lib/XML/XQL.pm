@@ -75,7 +75,7 @@ use vars qw( @EXPORT $VERSION
 
 BEGIN
 {
-    $VERSION = '0.66';
+    $VERSION = '0.67';
 
     die "XML::XQL is already used/required" if defined $Included;
     $Included = 1;
@@ -507,6 +507,7 @@ sub tput
 {
     # Let me know if I need to add other systems for which 'tput' is not 
     # available.
+    return undef unless defined $ENV{TERM};
     if ($^O =~ /Win|MacOS/)
     {
 	return "";
