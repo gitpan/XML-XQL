@@ -1,18 +1,18 @@
 =head1 NAME
 
-XQL Tutorial - Describes the XQL query syntax
+XML::XQL::Tutorial - Describes the XQL query syntax
 
 =head1 DESCRIPTION
 
 This document describes basic the features of the XML Query Language (XQL.)
 A proposal for the XML Query Language (XQL) specification was submitted
 to the XSL Working Group in September 1998. 
-The spec can be found at: http://www.w3.org/TandS/QL/QL98/pp/xql.html.
+The spec can be found at L<http://www.w3.org/TandS/QL/QL98/pp/xql.html>.
 Since it is only a proposal at this point, things may change, but it is very
 likely that the final version will be close to the proposal.
 Most of this document was copied straight from the spec.
 
-See also the XML::XQL man page.
+See also the L<XML::XQL> man page.
 
 =head1 INTRODUCTION
 
@@ -35,12 +35,12 @@ proposal. It is not their intent that this term be used permanently.
 Also, beware that another query language exists called XML-QL,
 which uses a syntax very similar to SQL.
 
-The XML::XQL module has added functionality to the XQL spec, called I<XQL+>.
+The L<XML::XQL> module has added functionality to the XQL spec, called I<XQL+>.
 To allow only XQL functionality as described in the spec, use the 
 XML::XQL::Strict module. Note that the XQL spec makes the distinction between 
 core XQL and XQL extensions. This implementation makes no distinction and
 the Strict module, therefore, implements everything described in the XQL spec.
-See the XML::XQL man page for more information about the Strict module.
+See the L<XML::XQL> man page for more information about the Strict module.
 This tutorial will clearly indicate when referring to XQL+.
 
 =head1 XQL Patterns
@@ -69,7 +69,7 @@ shown in the sample file at the end of this man page.
 =head1 Context
 
 A I<context> is the set of nodes against which a query operates.
-For the entire query, which is passed to the XML::XQL::Query
+For the entire query, which is passed to the L<XML::XQL::Query>
 constructor through the I<Expr> option, the context is the list of input nodes
 that is passed to the query() method.
 
@@ -128,7 +128,7 @@ hierarchy, and identity, to the extent that these are defined.
 That is, a collection of elements will always be returned in document order 
 without repeats. Note that the spec states that the order of attributes within
 an element is undefined, but that this implementation does keep attributes
-in document order. See the XML::XQL man page for more details regarding 
+in document order. See the L<XML::XQL> man page for more details regarding 
 I<Document Order>.
 
 =head1 Collections - 'element' and '.'
@@ -285,7 +285,7 @@ a single and a double quote in it. To remedy this, XQL+ has added the q// and
 qq// string delimiters which behave just like they do in Perl. 
 
 For Numbers, exponential notation is not allowed. Use the XQL+ function eval()
-to circumvent this problem. See XML::XQL man page for details.
+to circumvent this problem. See L<XML::XQL> man page for details.
 
 The empty list or undef is represented by [] (i.e. reference to empty array)
 in this implementation.
@@ -664,7 +664,7 @@ match. Both lvalue and rvalue are first cast to strings.
 The rvalue string should have the syntax of a Perl rvalue, that is the delimiters
 should be included and modifiers are allowed. When using delimiters other than
 slashes '/', the 'm' should be included. The rvalue should be a string, so don't
-forget the quotes! (Or use the q// or qq// delimiters in XQL+, see XML::XQL
+forget the quotes! (Or use the q// or qq// delimiters in XQL+, see L<XML::XQL>
 man page.)
 
 Note that you can't use the Perl substitution operator s/// here. Try using the
@@ -686,7 +686,7 @@ Find all book titles that don't contain 'Trenton' (case-insensitive):
 
 =head2 Oher XQL+ comparison operators - '$isa', '$can$'
 
-See the XML::XQL man page for other operators available in XQL+.
+See the L<XML::XQL> man page for other operators available in XQL+.
 
 =head2 Comparisons and vectors
 
@@ -711,7 +711,7 @@ default, but this behavior can be altered by the user, so the value() method
 may return other XQL data types.
 
 When two values are compared, they are first casted to the same type.
-See the XML::XQL man page for details on casting.
+See the L<XML::XQL> man page for details on casting.
 
 Note that the XQL spec is not very clear on how values should be casted for 
 comparison. Discussions with the authors of the XQL spec revealed that there
@@ -720,8 +720,8 @@ This implementation is closest to that of Joe Lapp from webMethods, Inc.
 
 =head1 Methods - 'method()' or 'query!method()'
 
-XQL makes a distinction between functions and methods. See the XML::XQL man page 
-for details.
+XQL makes a distinction between functions and methods. 
+See the L<XML::XQL> man page for details.
 
 XQL provides methods for advanced manipulation of collections. These methods 
 provide specialized collections of nodes (see Collection methods), as well as 
@@ -753,7 +753,7 @@ The following will return all authors containing a child named Bob:
      author[*!text() = 'Bob']
 
 Method names are case sensitive.
-See the XML::XQL man page on how to define your own methods and functions.
+See the L<XML::XQL> man page on how to define your own methods and functions.
 
 =head2 Information methods
 
@@ -776,7 +776,7 @@ around the entity refs when they are expanded.
 
 In this implementation, the method may receive an optional parameter
 to indicate whether the text() of Element nodes should include the text() of
-its Element descendants. See XML::XQL man page for details.
+its Element descendants. See L<XML::XQL> man page for details.
 
 Examples:
 
@@ -803,7 +803,7 @@ normalize whitespace.
 
 In this implementation, the method may receive an optional parameter
 to indicate whether the rawText() of Element nodes should include the 
-rawText() of its Element descendants. See XML::XQL man page for details.
+rawText() of its Element descendants. See L<XML::XQL> man page for details.
 
 =item Method: value()
 
@@ -849,7 +849,7 @@ on the node type values in the DOM:
 Note that in XQL, CDATASection nodes and EntityReference nodes also return 3,
 whereas in the DOM CDATASection returns 4 and EntityReference returns 5.
 Use the XQL+ method DOM_nodeType() to get DOM node type values.
-See the XML::DOM man page for node type values of nodes not mentioned here.
+See the L<XML::DOM> man page for node type values of nodes not mentioned here.
 
 =item Method: nodeTypeString
 
@@ -861,7 +861,11 @@ following node types are currently supported 1 (element), 2 (attribute),
 
 Returns the tag name for Element nodes and the attribute name of attributes.
 
+=back
+
 =head2 Collection index methods
+
+=over 4
 
 =item Method: index()
 
@@ -1166,8 +1170,13 @@ of the set to which the parameter evaluates.
 XQL does not define the representation of the date value, nor does it
 define how the function translates parameter values into dates. 
 This implementation uses the Date::Manip module to parse dates, which accepts
-almost any imaginable format. See the XML::XQL man page to plug in your own
+almost any imaginable format. See L<XML::XQL> to plug in your own
 Date implementation.
+
+Include the L<XML::XQL::Date> package to add the XQL date type and the date() 
+function, like this:
+
+ use XML::XQL::Date;
 
 =item Perl builtin functions and other XQL+ functions
 
@@ -1175,14 +1184,14 @@ XQL+ provides XQL function wrappers for most Perl builtin functions.
 It also provides other cool functions like subst(), map(), and eval() that
 allow you to modify documents and embed perl code.
 If this is still not enough, you can add your own function and methods.
-See XML::XQL man page for details.
+See L<XML::XQL> man page for details.
 
 =back
 
 =head1 Sequence Operators - ';' and ';;'
 
 The whitepaper 'The Design of XQL' by Jonathan Robie, which can be found
-at http://www.texcel.no/whitepapers/xql-design.html describes the sequence
+at L<http://www.texcel.no/whitepapers/xql-design.html> describes the sequence
 operators ';;' (precedes) and ';' (immediately precedes.) Although these
 operators are not included in the XQL spec, I thought I'd add them anyway.
 
@@ -1338,3 +1347,11 @@ XML::XQL distribution.
      <my:author>Robert Bob</my:author>
    </my:book>
  </bookstore>
+
+=head1 SEE ALSO
+
+The Japanese version of this document can be found on-line at
+L<http://member.nifty.ne.jp/hippo2000/perltips/xml/xql/tutorial.htm>
+
+L<XML::XQL>, L<XML::XQL::Date>, L<XML::XQL::Query> and L<XML::XQL::DOM>
+

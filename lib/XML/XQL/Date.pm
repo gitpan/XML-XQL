@@ -11,8 +11,18 @@ use vars qw(@ISA);
 @ISA = qw( XML::XQL::PrimitiveType );
 
 use strict;
-use Date::Manip;
 use Carp;
+
+#BEGIN
+#{
+#    # Date::Manip relies on setting of $TZ. 
+#    unless (defined $ENV{TZ})
+#    {
+#	$ENV{TZ} = "EST5EDT";
+#	warn "XML::XQL::Date - setting timezone \$ENV{TZ} to EST5EDT (east coast USA.) Set your TZ environment variable to avoid this message.";
+#    }
+#}
+use Date::Manip;
 
 BEGIN {
     # add date() implementation to XQL engine.
@@ -164,3 +174,33 @@ sub date	# static method
 }
 
 1; # module return code
+
+__END__
+
+=head1 NAME
+
+XML::XQL::Date - Adds an XQL::Node type for representing and comparing dates and times
+
+=head1 SYNOPSIS
+
+ use XML::XQL;
+ use XML::XQL::Date;
+
+ my $query = new XML::XQL::Query (Expr => "doc//timestamp[. < date('12/31/1999')]");
+ my @results = $query->solve ($doc);
+
+=head1 DESCRIPTION
+
+This package uses the L<Date::Manip> package to add an XQL node type 
+(called XML::XQL::Date) that can be used to represent dates and times. 
+The Date::Manip package can parse almost any date or time format imaginable.
+(I tested it with Date::Manip 5.33 and I know for sure that it doesn't work 
+with 5.20 or lower.)
+
+It also adds the XQL B<date> function which creates an XML::XQL::Date 
+object from a string. See L<XML::XQL::Tutorial> for a description of the date()
+function.
+
+You can plug in your own Date type, if you don't want to use Date::Manip 
+ for some reason. See L<XML::XQL> and the XML::XQL::Date source file for
+more details.

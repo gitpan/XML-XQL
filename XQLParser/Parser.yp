@@ -85,7 +85,7 @@ Union:		Intersection
 
 Intersection:	Comparison 
 		| Comparison 'intersect' Intersection { 
-		    new XML::XQL::Intersect ($_[1], $_[3]); }
+		    new XML::XQL::Intersect (Left => $_[1], Right => $_[3]); }
 		;
 
 ComparisonOp:	COMPARE {
@@ -101,11 +101,11 @@ Comparison:	Path
 				Right => $_[3]); }
 		| 'any' LValue ComparisonOp RValue {
 			new XML::XQL::Compare (All => 0, Left => $_[2], 
-				Oper => $_[3]->[0], Func => $_[3]->[0],
+				Oper => $_[3]->[0], Func => $_[3]->[1],
 				Right => $_[4]); }
 		| 'all' LValue ComparisonOp RValue {
 			new XML::XQL::Compare (All => 1, Left => $_[2], 
-				Oper => $_[3]->[0], Func => $_[3]->[0],
+				Oper => $_[3]->[0], Func => $_[3]->[1],
 				Right => $_[4]); }
 		;
 
@@ -190,6 +190,7 @@ Grouping:	RelativeTerm
 		;
 
 RelativeTerm:	'.' { new XML::XQL::Current; }
+		| '..' { new XML::XQL::Parent; }
 		| Invocation 
 		| ElementName
 		| AttributeName

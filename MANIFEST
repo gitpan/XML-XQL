@@ -1,43 +1,17 @@
 Changes
-DOM/DOM.pm			fits XML::DOM into XQL framework (you still need XML::DOM module!)
-DOM/Makefile.PL
-MANIFEST			this file
-Makefile.PL			main Makefile
-Parser/Makefile.PL		Makefile for Parser.pm
-Parser/Parser.pm		XQL Parser, generated from Parser.yp
-Parser/Parser.yp		YAPP grammer for Parser
-README
-XQL.pm				The main XQL module with extended behavior
-XQL/Date.pm			XML::XQL::Date to support XQL date() function
-XQL/Debug.pm
-XQL/Plus.pm			extra functionality not in XQL spec
-XQL/Strict.pm			forces 'pure' behavior (nothing outside XQL spec is allowed)
-XQL/Tutorial.pod
-samples/REC-xml-19980210.xml
-samples/bookstore.xml
-samples/xql.pl
-t/Strict.t
-t/attr.t
-t/comment.t
-t/cos.t
-t/date.t
-t/eval.t
-t/immed_precedes.t
-t/index.t
-t/index2.t
-t/map.t
-t/new.t
-t/once.t
-t/precedes.t
-t/recurse.t
-t/recurse2.t
-t/sin2.t
-t/subscript.t
-t/subscript2.t
-t/subst.t
-t/template.t
-t/test.t
-t/test_DATA_CKL.t
-t/text.t
-t/union.t
-t/union2.t
+Makefile.PL
+MANIFEST
+test.pl
+lib/XML/XQL.pm
+XQLParser/Makefile.PL
+XQLParser/Parser.pm             Parser for XML::XQL expressions
+XQLParser/Parser.yp             YAPP input that produces XQLParser/Parser.pm
+lib/XML/XQL.pm
+lib/XML/XQL/DOM.pm
+lib/XML/XQL/Date.pm             Adds date() method to XML::XQL
+lib/XML/XQL/Debug.pm
+lib/XML/XQL/DirXQL.pm
+lib/XML/XQL/Plus.pm
+lib/XML/XQL/Query.pod
+lib/XML/XQL/Strict.pm
+lib/XML/XQL/Tutorial.pod        XML::XQL::Tutorial manual page

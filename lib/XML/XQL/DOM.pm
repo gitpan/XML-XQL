@@ -15,32 +15,48 @@
 # documentation.
 #
 
+use strict;
 package XML::XQL::DOM;
 
 BEGIN
 {
     require XML::DOM;
-    push @XML::DOM::Node::ISA, 'XML::XQL::Node';
+
+    # import constant field definitions, e.g. _Doc
+    import XML::DOM::Node qw{ :Fields };
 }
 
 package XML::DOM::Node;
 
+sub xql
+{
+    my $self = shift;
+
+    # Odd number of args, assume first is XQL expression without 'Expr' key
+    unshift @_, 'Expr' if (@_ % 2 == 1);
+    my $query = new XML::XQL::Query (@_);
+    my @result = $query->solve ($self);
+    $query->dispose;
+
+    @result;
+}
+
 sub xql_sortKey
 {
-    my $key = $_[0]->{SortKey};
+    my $key = $_[0]->[_SortKey];
     return $key if defined $key;
 
-    $key = XML::XQL::createSortKey ($_[0]->{Parent}->xql_sortKey, 
+    $key = XML::XQL::createSortKey ($_[0]->[_Parent]->xql_sortKey, 
 				    $_[0]->xql_childIndex, 1);
 #print "xql_sortKey $_[0] ind=" . $_[0]->xql_childIndex . " key=$key str=" . XML::XQL::keyStr($key) . "\n";
-    $_[0]->{SortKey} = $key;
+    $_[0]->[_SortKey] = $key;
 }
 
 # Find previous sibling that is not a text node with ignorable whitespace
 sub xql_prevNonWS
 {
     my $self = shift;
-    my $parent = $self->{Parent};
+    my $parent = $self->[_Parent];
     return unless $parent;
 
     for (my $i = $parent->getChildIndex ($self) - 1; $i >= 0; $i--)
@@ -61,7 +77,7 @@ sub xql_isIgnorableWS
 # It should if it has attribute xml:space="preserve"
 sub xql_preserveSpace
 {
-    $_[0]->{Parent}->xql_preserveSpace;
+    $_[0]->[_Parent]->xql_preserveSpace;
 }
 
 sub xql_element
@@ -72,12 +88,12 @@ sub xql_element
 
 sub xql_document
 {
-    $_[0]->{Doc};
+    $_[0]->[_Doc];
 }
 
 sub xql_node
 {
-    my $kids = $_[0]->{C};
+    my $kids = $_[0]->[_C];
     if (defined $kids)
     {
 	# Must copy the list or else we return a blessed reference
@@ -92,19 +108,19 @@ sub xql_node
 #?? implement something to support NamedNodeMaps in DocumentType
 sub xql_childIndex
 {
-    $_[0]->{Parent}->getChildIndex ($_[0]);
+    $_[0]->[_Parent]->getChildIndex ($_[0]);
 }
 
 #?? implement something to support NamedNodeMaps in DocumentType
 sub xql_childCount
 {
-    my $ch = $_[0]->{C};
+    my $ch = $_[0]->[_C];
     defined $ch ? scalar(@$ch) : 0;
 }
 
 sub xql_parent
 {
-    $_[0]->{Parent};
+    $_[0]->[_Parent];
 }
 
 sub xql_DOM_nodeType
@@ -136,7 +152,7 @@ sub xql_attribute
     }
     else
     {
-	$node->{A}->getValues;
+	defined $node->[_A] ? $node->[_A]->getValues : [];
     }
 }
 
@@ -144,8 +160,8 @@ sub xql_attribute
 # Returns the maximum of the number of children and the number of Attr nodes.
 sub xql_childCount
 {
-    my $n = scalar @{$_[0]->{C}};
-    my $m = $_[0]->{A}->getLength;
+    my $n = scalar @{$_[0]->[_C]};
+    my $m = defined $_[0]->[_A] ? $_[0]->[_A]->getLength : 0;
     return $n > $m ? $n : $m;
 }
 
@@ -156,16 +172,16 @@ sub xql_element
     my @list;
     if (defined $elem)
     {
-	for my $kid (@{$node->{C}})
+	for my $kid (@{$node->[_C]})
 	{
-	    push @list, $kid if $kid->isElementNode && $kid->{TagName} eq $elem;
+	    push @list, $kid if $kid->isElementNode && $kid->[_TagName] eq $elem;
 	}
     }
     else
     {
-	for my $kid (@{$node->{C}})
+	for my $kid (@{$node->[_C]})
 	{
-	    push @list, $kid if exists $kid->{TagName}; # $kid->isElementNode;
+	    push @list, $kid if $kid->isElementNode;
 	}
     }
     \@list;
@@ -173,19 +189,19 @@ sub xql_element
 
 sub xql_nodeName
 {
-    $_[0]->{TagName};
+    $_[0]->[_TagName];
 }
 
 sub xql_baseName
 {
-    my $name = $_[0]->{TagName};
+    my $name = $_[0]->[_TagName];
     $name =~ s/^\w*://;
     $name;
 }
 
 sub xql_prefix
 {
-    my $name = $_[0]->{TagName};
+    my $name = $_[0]->[_TagName];
     $name =~ /([^:]+):/;
     $1;
 }
@@ -289,7 +305,7 @@ sub xql_rawTextBlocks
     my @result;
     my $curr;
     my $prevWasText = 0;
-    my $kids = $self->{C};
+    my $kids = $self->[_C];
     my $n = @$kids;
     for (my $i = 0; $i < $n; $i++)
     {
@@ -323,10 +339,10 @@ sub xql_replaceBlockWithText
     for (my $i = $end; $i > $start; $i--)
     {
 	# dispose of the old nodes
-	$self->removeChild ($self->{C}->[$i])->dispose;
+	$self->removeChild ($self->[_C]->[$i])->dispose;
     }
-    my $node = $self->{C}->[$start];
-    my $newNode = $self->{Doc}->createTextNode ($text);
+    my $node = $self->[_C]->[$start];
+    my $newNode = $self->[_Doc]->createTextNode ($text);
     $self->replaceChild ($newNode, $node)->dispose;
 }
 
@@ -334,12 +350,12 @@ sub xql_setValue
 {
     my ($self, $str) = @_;
     # Remove all children
-    for my $kid (@{$self->{C}})
+    for my $kid (@{$self->[_C]})
     {
 	$self->removeChild ($kid);
     }
     # Add a (single) text node
-    $self->appendChild ($self->{Doc}->createTextNode ($str));
+    $self->appendChild ($self->[_Doc]->createTextNode ($str));
 }
 
 sub xql_value
@@ -351,17 +367,17 @@ sub xql_preserveSpace
 {
     # attribute value should be "preserve" (1), "default" (0) or "" (ask parent)
     my $space = $_[0]->getAttribute ("xml:space");
-    $space eq "" ? $_[0]->{Parent}->xql_preserveSpace : ($space eq "preserve");
+    $space eq "" ? $_[0]->[_Parent]->xql_preserveSpace : ($space eq "preserve");
 }
 
 package XML::DOM::Attr;
 
 sub xql_sortKey
 {
-    my $key = $_[0]->{SortKey};
+    my $key = $_[0]->[_SortKey];
     return $key if defined $key;
 
-    $_[0]->{SortKey} = XML::XQL::createSortKey ($_[0]->xql_parent->xql_sortKey, 
+    $_[0]->[_SortKey] = XML::XQL::createSortKey ($_[0]->xql_parent->xql_sortKey, 
 						$_[0]->xql_childIndex, 0);
 }
 
@@ -406,12 +422,12 @@ sub xql_prefix
 
 sub xql_parent
 {
-    $_[0]->{UsedIn}->{''}->{Parent};
+    $_[0]->[_UsedIn]->{''}->{Parent};
 }
 
 sub xql_childIndex
 {
-    my $map = $_[0]->{UsedIn};
+    my $map = $_[0]->[_UsedIn];
     $map ? $map->getChildIndex ($_[0]) : 0;
 }
 
@@ -419,12 +435,12 @@ package XML::DOM::Text;
 
 sub xql_rawText
 {
-    $_[0]->{Data};
+    $_[0]->[_Data];
 }
 
 sub xql_text
 {
-    trimSpace ($_[0]->{Data});
+    XML::XQL::trimSpace ($_[0]->[_Data]);
 }
 
 sub xql_setValue
@@ -434,7 +450,7 @@ sub xql_setValue
 
 sub xql_isIgnorableWS
 {
-    $_[0]->{Data} =~ /^\s*$/ &&
+    $_[0]->[_Data] =~ /^\s*$/ &&
     !$_[0]->xql_preserveSpace;
 }
 
@@ -442,12 +458,12 @@ package XML::DOM::CDATASection;
 
 sub xql_rawText
 {
-    $_[0]->{Data};
+    $_[0]->[_Data];
 }
 
 sub xql_text
 {
-    trimSpace ($_[0]->{Data});
+    XML::XQL::trimSpace ($_[0]->[_Data]);
 }
 
 sub xql_setValue
@@ -462,6 +478,12 @@ sub xql_nodeType
 
 package XML::DOM::EntityReference;
 
+BEGIN
+{
+    # import constant field definitions, e.g. _Data
+    import XML::DOM::CharacterData qw{ :Fields };
+}
+
 sub xql_text
 {
     $_[0]->getData;
@@ -469,7 +491,7 @@ sub xql_text
 
 sub xql_rawText
 {
-    trimSpace ($_[0]->{Data});
+    XML::XQL::trimSpace ($_[0]->[_Data]);
 }
 
 sub xql_setValue
@@ -484,6 +506,12 @@ sub xql_nodeType
 
 package XML::DOM::Document;
 
+BEGIN
+{
+    # import constant field definitions, e.g. _TagName
+    import XML::DOM::Element qw{ :Fields };
+}
+
 sub xql_sortKey
 {
     "";
@@ -496,14 +524,14 @@ sub xql_element
     my @list;
     if (defined $elem)
     {
-	for my $kid (@{$node->{C}})
+	for my $kid (@{$node->[_C]})
 	{
-	    push @list, $kid if $kid->isElementNode && $kid->{TagName} eq $elem;
+	    push @list, $kid if $kid->isElementNode && $kid->[_TagName] eq $elem;
 	}
     }
     else
     {
-	for my $kid (@{$node->{C}})
+	for my $kid (@{$node->[_C]})
 	{
 	    push @list, $kid if $kid->isElementNode;
 	}
@@ -524,6 +552,12 @@ sub xql_preserveSpace
 
 package XML::DOM::DocumentFragment;
 
+BEGIN
+{
+    # import constant field definitions, e.g. _TagName
+    import XML::DOM::Element qw{ :Fields };
+}
+
 sub xql_element
 {
     my ($node, $elemName) = @_;
@@ -531,14 +565,14 @@ sub xql_element
     my @list;
     if (defined $elemName)
     {
-	for my $kid (@{$node->{C}})
+	for my $kid (@{$node->[_C]})
 	{
-	    push @list, $kid if $kid->isElementNode && $kid->{TagName} eq $elemName;
+	    push @list, $kid if $kid->isElementNode && $kid->[_TagName] eq $elemName;
 	}
     }
     else
     {
-	for my $kid (@{$node->{C}})
+	for my $kid (@{$node->[_C]})
 	{
 	    push @list, $kid if $kid->isElementNode;
 	}
@@ -552,3 +586,37 @@ sub xql_parent
 }
 
 1; # module loaded successfuly
+
+__END__
+
+=head1 NAME
+
+XML::XQL::DOM - Adds XQL support to XML::DOM nodes
+
+=head1 SYNOPSIS
+
+ use XML::XQL;
+ use XML::XQL::DOM;
+
+ $parser = new XML::DOM::Parser;
+ $doc = $parser->parsefile ("file.xml");
+
+ # Return all elements with tagName='title' under the root element 'book'
+ $query = new XML::XQL::Query (Expr => "book/title");
+ @result = $query->solve ($doc);
+
+ # Or (to save some typing)
+ @result = XML::XQL::solve ("book/title", $doc);
+
+ # Or (see XML::DOM::Node)
+ @result = $doc->xql ("book/title");
+
+=head1 DESCRIPTION
+
+XML::XQL::DOM adds methods to L<XML::DOM> nodes to support XQL queries
+on XML::DOM document structures.
+
+See L<XML::XQL> and L<XML::XQL::Query> for more details.
+L<XML::DOM::Node> describes the B<xql()> method.
+
+
