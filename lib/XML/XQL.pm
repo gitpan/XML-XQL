@@ -75,7 +75,7 @@ use vars qw( @EXPORT $VERSION
 
 BEGIN
 {
-    $VERSION = '0.67';
+    $VERSION = '0.68';
 
     die "XML::XQL is already used/required" if defined $Included;
     $Included = 1;

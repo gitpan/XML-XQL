@@ -1,5 +1,11 @@
 Change History:
 
+0.68 (tjmather) 1/16/2003
+- Delay calling tput until delimiters are needed, and don't call if
+  user specifies his/her own delimiters first (Ed Avis)
+- Don't run tput if TERM is set to empty string (Ed Avis)
+- Filled in MANIFEST
+
 0.67 (tjmather) 5/11/2002
 - Only use tput if TERM environment variable is set (Poul Sørensen)
 
