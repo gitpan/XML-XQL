@@ -1,0 +1,72 @@
+0.58 (enno) 1/25/1999
+- Fixed bug in text() for Element nodes. It would sometimes omit the contents
+  of certain text nodes when merging text within an Element node.
+  (Thanks to Marcin Jagodzinski at marcinj@quake.org.pl)
+- text(0) and rawText(0) for Element nodes would include child Element nodes
+  (contrary to the POD documentation)
+- Added t/text.t test case.
+
+0.57 (enno) 1/22/1999
+- Fixed code related to sorting in document order when the node list contains
+  Attribute nodes.
+  (Thanks to Martin Virtel at virtel@zeit.de)
+
+0.56 (enno) 1/20/1999
+- Fixed Subscript related code (e.g. for queries a la "//author[2]") and
+  added testcase t/subscript.t
+  It used to throw the following exception:
+  "Can't call method "setParent" without a package or object reference..."
+  (Thanks to Arved Sandstrom at Arved_37@chebucto.ns.ca)
+
+0.55 (enno) 1/13/1999
+- Added XML::DOM to dependancy list in Makefile.PL
+
+0.54 (enno) 1/7/1999
+- XQL keywords are now case-insensitive and dollar delimiters may be omitted.
+- Changed regexp "s/^(\s*|#.*)*//" to "s/^(\s|#.*)*//" to avoid error "regexp *+
+  operand can be empty" with Perl 5.004_4
+- Removed build warnings a la 'Ambiguous use of ...' with Perl 5.004_4
+  (Thanks to Tony Hammond at tony_hammond@harcourtbrace.com)
+
+0.53 (enno) 12/21/1998
+- Fixed Union operator (bug in sorting code)
+- Fixed XQL+ operators
+- Changed Element::xql_text and Element::xql_rawText (i.e. text() and rawText() 
+  methods) to recurse by default.
+- Added defineElementValueConvertor() and defineAttrValueConvertor() to
+  support user defined conversion of Element and Attribute value() results.
+- Added samples/xql.pl. A nifty utility that performs XQL queries on files
+  and formats the output in multiple ways, or modifies XML files in place.
+  (Run xql.pl without parameters for Usage description.)
+- Wrote Tutorial (use man XML::XQL::Tutorial)
+- Added DOM_nodeType() method
+- Changed default nodeType() from -1 to 0. This is returned for primitives.
+- nodeType returns same as DOM_nodeType for all node types other than 
+  CDATASection and EntityReference. It used to return -1 for node types not
+  specified in the XQL spec.
+- Fixed nodeTypeString() for processing instructions from "pi" to
+  "processing_instruction" (as per the XQL spec)
+- Fixed prefix(). It used to return the entire nodeName if there was no prefix.
+- Changed t/sin2.t test case, so it won't spit out warnings
+- Simplified build environment
+
+0.52 (enno) 12/10/1998
+- Fixed Makefiles and put submodules in subdirectories.
+  (I had some soft links in my development environment, so everything
+  worked for me. I forgot to test the installation from scratch. Sorry...)
+- Added XML::DOM::Element::xql_rawTextBlocks for use in subst, map etc.
+- Changed subst() to work on 'text blocks' for Element nodes by default.
+  Added MODE parameter. MODE=1 uses value() for Elements, just like version 0.51
+- subst() uses xql_setValue to modify objects that match. It used to create a new
+  object when it matched an XQL primitive (to prevent people from modifying
+  constants in the XQL query expression), but on second thought it doesn't seem
+  likely that that will be a problem. (Hell, it might be a feature :-)
+- Fixed generateFunction for when ARGCOUNT = [N, -1]
+- Added new() function
+- Cleaned up Date class and modified date() function accordingly
+- Added defineExpandedTypes()
+- Added more stuff to the POD documentation.
+
+0.51 (enno) 12/7/1998
+- First alpha release. Announced to Perl-XML mailing list.
+
