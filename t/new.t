@@ -3,6 +3,7 @@ END {print "not ok 1\n" unless $loaded;}
 
 use XML::XQL;
 use XML::XQL::DOM;
+use XML::XQL::Date;
 use XML::XQL::Debug;
 
 $loaded = 1;

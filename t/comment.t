@@ -1,11 +1,8 @@
 BEGIN {print "1..3\n";}
 END {print "not ok 1\n" unless $loaded;}
-
 use XML::XQL;
 use XML::XQL::DOM;
-use XML::XQL::Date;
 use XML::XQL::Debug;
-
 $loaded = 1;
 print "ok 1\n";
 
@@ -25,21 +22,22 @@ sub assert_output
     $^W=0;
     my $data = join('',<DATA>);
 #print "{{$data}}\n{{$str}}\n";
-
     assert_ok ($str eq $data);
 }
-
 #Test 2
 
 $dom = new XML::DOM::Parser;
 my $str = <<END;
 <DATA>
 <DATE>1993-02-14</DATE>
+<!-- comment 1 -->
+<!-- comment 2 -->
 <CKL cklAttr="cklAttrVal1">
 <CKLID>P001</CKLID>
 <SEGMENT> </SEGMENT>
 <COUNTRY>USA</COUNTRY>
 <LOCALCONTACT>
+<!-- comment 3 -->
 <ADDRESS>HNLLHIWP</ADDRESS>
 </LOCALCONTACT>
 </CKL>
@@ -49,36 +47,54 @@ my $str = <<END;
 <COUNTRY>USA</COUNTRY>
 <LOCALCONTACT>
 <ADDRESS>45 HOLOMOA STREET</ADDRESS>
+<!-- comment 4 -->
+<!-- comment 5 -->
 </LOCALCONTACT>
 </CKL>
+<!-- comment 6 -->
 </DATA>
 END
 
 my $doc = $dom->parse ($str);
 assert_ok ($doc); 
 
-#@result = XML::XQL::solve ('DATA/CKL[@cklAttr $eq$ "cklAttrVal2"]', $doc);
-#@result = XML::XQL::solve ('//.[attribute()!count() = 1]', $doc);
-# err @result = XML::XQL::solve ('DATA/CKL[attribute(2, 1)!count() = 1]', $doc);
-#@result = XML::XQL::solve ('//.[false()!textNode() = 1]', $doc);
-#
+@result = XML::XQL::solve ('//comment()', $doc);
 
-#?@result = XML::XQL::solve ('DATA/CKL[@cklAttr $eq$ "cklAttrVal2"]', $doc);
-#@result = XML::XQL::solve ('DATA/CKL', $doc);
-
-#
-
-@result = XML::XQL::solve ('DATA//*[. = date("1993/02/14")]', $doc);
 $result = XML::XQL::Debug::str (\@result);
-assert_output ($result);
 
 #print $result;
+assert_output ($result);
 
 __DATA__
 <array>
   <item index='0'>
-    <obj type='XML::DOM::Element'>
-<DATE>1993-02-14</DATE>
+    <obj type='XML::DOM::Comment'>
+<!-- comment 1 -->
+    </obj>
+  </item>
+  <item index='1'>
+    <obj type='XML::DOM::Comment'>
+<!-- comment 2 -->
+    </obj>
+  </item>
+  <item index='2'>
+    <obj type='XML::DOM::Comment'>
+<!-- comment 3 -->
+    </obj>
+  </item>
+  <item index='3'>
+    <obj type='XML::DOM::Comment'>
+<!-- comment 4 -->
+    </obj>
+  </item>
+  <item index='4'>
+    <obj type='XML::DOM::Comment'>
+<!-- comment 5 -->
+    </obj>
+  </item>
+  <item index='5'>
+    <obj type='XML::DOM::Comment'>
+<!-- comment 6 -->
     </obj>
   </item>
 </array>

@@ -166,7 +166,7 @@ operators ('/' or '//'). These operators take as their arguments a collection
 elements to select (right side). The child operator ('/')selects from immediate 
 children of the left-side collection, while the descendant operator ('//') 
 selects from arbitrary descendants of the left-side collection. 
-In effect, the '//' can be though of as a substitute for one or more levels of 
+In effect, the '//' can be thought of as a substitute for one or more levels of 
 hierarchy. Note that the path operators change the context as the
 query is performed. By stringing them together users can 'drill down' into the 
 document.
@@ -275,9 +275,9 @@ Find the style attribute for all book elements:
 =head1 XQL Literals
 
 XQL query expressions may contain literal values (i.e. constants.)
-Numbers (integers and floats) are wrapped in an XML::XQL::Number object and
-string in a XML::XQL::Text object. Booleans (as returned by true() and false())
-are wrapped in an XML::XQL::Boolean objects.
+Numbers (integers and floats) are wrapped in XML::XQL::Number objects and
+strings in XML::XQL::Text objects. Booleans (as returned by true() and false())
+are wrapped in XML::XQL::Boolean objects.
 
 Strings must be enclosed in single or double quotes. Since XQL does not allow
 escaping of special characters, it's impossible to create a string with both
@@ -451,7 +451,7 @@ The following will return the first y from the first x:
 
      x[0]/y[0]
 
-Find the first and third author elements: 
+Find the first and fourth author elements: 
 
      author[0,3]
 
@@ -609,6 +609,8 @@ Find all authors whose text is 'Matthew Bob':
 
      author[. = 'Matthew Bob']
 
+     author = 'Matthew Bob'
+
 =back
 
 =head2 Comparison - '<', '<=', '>', '>=', '$lt', '$ilt$' etc.
@@ -642,7 +644,7 @@ Find all authors whose last name begins with 'M', 'm' or greater:
 
      author[last-name $ige$ 'M']
 
-Find the first two books:
+Find the first three books:
 
      book[index() $le$ 2]
 
@@ -792,6 +794,8 @@ Find the authors with value 'Matthew Bob':
 
      author[. = 'Matthew Bob']
 
+     author = 'Matthew Bob'
+
 =item Method: rawText()
 
 The rawText() method is similar to the text() method, but it does not
@@ -803,9 +807,12 @@ rawText() of its Element descendants. See XML::XQL man page for details.
 
 =item Method: value()
 
-Returns a type cast version of the value of a node. If no datat type is
-provided, returns the same as text() 
-Shortcuts
+Returns a type cast version of the value of a node. If no data type is
+provided, returns the same as text().
+
+=over 4
+
+=item Shortcuts
 
 For the purposes of comparison, value( )is implied if omitted. 
 In other words, when two items are compared, the comparison is between 
@@ -821,6 +828,8 @@ The following examples are equivalent:
      price[@intl!value() = 'canada']
 
      price[@intl = 'canada']
+
+=back
 
 =item Method: nodeType()
 
@@ -1170,6 +1179,80 @@ See XML::XQL man page for details.
 
 =back
 
+=head1 Sequence Operators - ';' and ';;'
+
+The whitepaper 'The Design of XQL' by Jonathan Robie, which can be found
+at http://www.texcel.no/whitepapers/xql-design.html describes the sequence
+operators ';;' (precedes) and ';' (immediately precedes.) Although these
+operators are not included in the XQL spec, I thought I'd add them anyway.
+
+=head2 Immediately Precedes - ';'
+
+=over 4
+
+=item Example:
+
+With the following input:
+
+ <TABLE>
+  <ROWS>
+   <TR>
+    <TD>Shady Grove</TD>
+    <TD>Aeolian</TD>
+   </TR>
+   <TR>
+    <TD>Over the River, Charlie</TD>
+    <TD>Dorian</TD>
+   </TR>
+  </ROWS>
+ </TABLE>
+
+Find the TD node that contains "Shady Grove" and the TD node that immediately
+follows it:
+
+	//(TD="Shady Grove" ; TD)
+
+=back
+
+Note that in XML::DOM there is actually a text node with whitespace between
+the two TD nodes, but those are ignored by this operator, unless the text node
+has 'xml:space' set to 'preserve'. See ??? for details.
+
+=head2 Precedes - ';;'
+
+=over 4
+
+=item Example:
+
+With the following input (from Hamlet):
+
+ <SPEECH>
+  <SPEAKER>MARCELLUS</SPEAKER>
+  <LINE>Tis gone!</LINE>
+  <STAGEDIR>Exit Ghost</STAGEDIR>
+  <LINE>We do it wrong, being so majestical,</LINE>
+  <LINE>To offer it the show of violence;</LINE>
+  <LINE>For it is, as the air, invulnerable,</LINE>
+  <LINE>And our vain blows malicious mockery.</LINE>
+ </SPEECH>
+
+Return the STAGEDIR and all the LINEs that follow it:
+
+	SPEECH//( STAGEDIR ;; LINE )
+
+Suppose an actor playing the ghost wants to know when to exit; that is, he 
+wants to know who says what line just before
+he is supposed to exit. The line immediately precedes the stagedir, but the 
+speaker may occur at any time before the line.
+In this query, we will use the "precedes" operator (";;") to identify a speaker 
+that precedes the line somewhere within a
+speech. Our ghost can find the required information with the following query, 
+which selects the speaker, the line, and the stagedir:
+
+	SPEECH//( SPEAKER ;; LINE ; STAGEDIR="Exit Ghost")
+
+=back
+
 =head1 Operator Precedence
 
 The following table lists operators in precedence order, highest precedence 
@@ -1191,6 +1274,7 @@ The table also lists the associated productions:
 	Negation	$not$
 	Conjunction	$and$
 	Disjunction	$or$
+	Sequence	; ;;
 
 =head1 Sample XML Document - bookstore.xml
 

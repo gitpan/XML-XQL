@@ -26,329 +26,145 @@ sub new {
 [
 	{#State 0
 		ACTIONS => {
-			'NCName' => 18,
-			"any" => 24,
-			"(" => 22,
-			"all" => 4,
-			"*" => 26,
-			'XQLName_Paren' => 12,
-			"." => 30,
-			"//" => 15,
-			"/" => 31,
-			"\@" => 17,
-			"not" => 32
+			'NCName' => 24,
+			"(" => 27,
+			"any" => 13,
+			"all" => 19,
+			"*" => 28,
+			'XQLName_Paren' => 21,
+			"." => 33,
+			"//" => 22,
+			"/" => 15,
+			"\@" => 10,
+			"not" => 16
 		},
 		GOTOS => {
-			'WildNCName' => 2,
-			'WildQName' => 1,
-			'Filter' => 3,
-			'RelativePath' => 5,
-			'LValue' => 6,
-			'Union' => 7,
-			'Conjunction' => 8,
-			'Disjunction' => 9,
-			'Grouping' => 11,
-			'ElementName' => 10,
-			'AbsolutePath' => 14,
-			'PathOp' => 13,
-			'Path' => 16,
-			'RelativeTerm' => 19,
-			'AttributeName' => 20,
-			'Negation' => 21,
-			'Query' => 23,
-			'Intersection' => 25,
-			'Bang' => 27,
-			'Invocation' => 28,
-			'Comparison' => 29,
-			'Subscript' => 33
+			'WildQName' => 18,
+			'WildNCName' => 17,
+			'Filter' => 1,
+			'Union' => 20,
+			'RelativePath' => 2,
+			'LValue' => 3,
+			'Conjunction' => 4,
+			'Disjunction' => 5,
+			'ElementName' => 6,
+			'Grouping' => 7,
+			'PathOp' => 23,
+			'AbsolutePath' => 8,
+			'Path' => 9,
+			'RelativeTerm' => 11,
+			'AttributeName' => 12,
+			'Negation' => 25,
+			'Query' => 26,
+			'Intersection' => 14,
+			'Bang' => 29,
+			'Sequence' => 30,
+			'Invocation' => 31,
+			'Comparison' => 32,
+			'Subscript' => 34
 		}
 	},
 	{#State 1
-		DEFAULT => -10
-	},
-	{#State 2
-		ACTIONS => {
-			":" => 34
-		},
-		DEFAULT => -4
-	},
-	{#State 3
 		ACTIONS => {
 			"[" => 35
 		},
-		DEFAULT => -49,
+		DEFAULT => -51,
 		GOTOS => {
 			'Subscript_2' => 36
 		}
 	},
+	{#State 2
+		DEFAULT => -43
+	},
+	{#State 3
+		ACTIONS => {
+			'MATCH' => 39,
+			'COMPARE' => 38
+		},
+		GOTOS => {
+			'ComparisonOp' => 37
+		}
+	},
 	{#State 4
 		ACTIONS => {
-			'NCName' => 18,
-			"(" => 22,
-			"*" => 26,
-			'XQLName_Paren' => 12,
-			"//" => 15,
-			"." => 30,
-			"/" => 31,
-			"\@" => 17
-		},
-		GOTOS => {
-			'WildNCName' => 2,
-			'WildQName' => 1,
-			'RelativeTerm' => 19,
-			'AttributeName' => 20,
-			'Filter' => 3,
-			'Bang' => 27,
-			'RelativePath' => 5,
-			'LValue' => 37,
-			'Invocation' => 28,
-			'ElementName' => 10,
-			'Grouping' => 11,
-			'AbsolutePath' => 14,
-			'PathOp' => 13,
-			'Path' => 38,
-			'Subscript' => 33
-		}
-	},
-	{#State 5
-		DEFAULT => -41
-	},
-	{#State 6
-		ACTIONS => {
-			'MATCH' => 40,
-			'COMPARE' => 39
-		},
-		GOTOS => {
-			'ComparisonOp' => 41
-		}
-	},
-	{#State 7
-		DEFAULT => -23
-	},
-	{#State 8
-		ACTIONS => {
-			"or" => 42
-		},
-		DEFAULT => -19
-	},
-	{#State 9
-		DEFAULT => -1
-	},
-	{#State 10
-		DEFAULT => -64
-	},
-	{#State 11
-		DEFAULT => -57
-	},
-	{#State 12
-		ACTIONS => {
-			'NCName' => 18,
-			'TEXT' => 43,
-			"(" => 22,
-			"any" => 24,
-			"all" => 4,
-			")" => 47,
-			"*" => 26,
-			'NUMBER' => 44,
-			'XQLName_Paren' => 12,
-			"." => 30,
-			"//" => 15,
-			"/" => 31,
-			"\@" => 17,
-			'INTEGER' => 46,
-			"not" => 32
-		},
-		GOTOS => {
-			'WildQName' => 1,
-			'WildNCName' => 2,
-			'Filter' => 3,
-			'Union' => 7,
-			'RelativePath' => 5,
-			'LValue' => 6,
-			'Conjunction' => 8,
-			'Disjunction' => 45,
-			'Invocation_2' => 48,
-			'ElementName' => 10,
-			'Grouping' => 11,
-			'PathOp' => 13,
-			'AbsolutePath' => 14,
-			'Path' => 16,
-			'Param' => 49,
-			'RelativeTerm' => 19,
-			'Negation' => 21,
-			'AttributeName' => 20,
-			'Intersection' => 25,
-			'Bang' => 27,
-			'Invocation' => 28,
-			'Comparison' => 29,
-			'Subscript' => 33
-		}
-	},
-	{#State 13
-		ACTIONS => {
-			"*" => 26,
-			'NCName' => 18,
-			'XQLName_Paren' => 12,
-			"." => 30,
-			"(" => 22,
-			"\@" => 17
-		},
-		GOTOS => {
-			'WildNCName' => 2,
-			'WildQName' => 1,
-			'RelativeTerm' => 19,
-			'AttributeName' => 20,
-			'Filter' => 3,
-			'Bang' => 27,
-			'RelativePath' => 50,
-			'Invocation' => 28,
-			'ElementName' => 10,
-			'Grouping' => 11,
-			'Subscript' => 33
-		}
-	},
-	{#State 14
-		DEFAULT => -40
-	},
-	{#State 15
-		DEFAULT => -18
-	},
-	{#State 16
-		ACTIONS => {
-			'COMPARE' => -35,
-			'MATCH' => -35
-		},
-		DEFAULT => -31
-	},
-	{#State 17
-		ACTIONS => {
-			"*" => 26,
-			'NCName' => 18
-		},
-		GOTOS => {
-			'WildQName' => 51,
-			'WildNCName' => 2
-		}
-	},
-	{#State 18
-		DEFAULT => -2
-	},
-	{#State 19
-		DEFAULT => -60
-	},
-	{#State 20
-		DEFAULT => -65
-	},
-	{#State 21
-		ACTIONS => {
-			"and" => 52
+			"or" => 40
 		},
 		DEFAULT => -21
 	},
-	{#State 22
+	{#State 5
 		ACTIONS => {
-			'NCName' => 18,
-			"(" => 22,
-			"any" => 24,
-			"all" => 4,
-			"*" => 26,
-			'XQLName_Paren' => 12,
-			"." => 30,
-			"//" => 15,
-			"/" => 31,
-			"\@" => 17,
-			"not" => 32
+			'SeqOp' => 41
+		},
+		DEFAULT => -19
+	},
+	{#State 6
+		DEFAULT => -66
+	},
+	{#State 7
+		DEFAULT => -59
+	},
+	{#State 8
+		DEFAULT => -42
+	},
+	{#State 9
+		ACTIONS => {
+			'COMPARE' => -37,
+			'MATCH' => -37
+		},
+		DEFAULT => -33
+	},
+	{#State 10
+		ACTIONS => {
+			"*" => 28,
+			'NCName' => 24
 		},
 		GOTOS => {
-			'WildNCName' => 2,
-			'WildQName' => 1,
-			'Filter' => 3,
-			'Union' => 7,
-			'RelativePath' => 5,
-			'LValue' => 6,
-			'Conjunction' => 8,
-			'Disjunction' => 53,
-			'ElementName' => 10,
-			'Grouping' => 11,
-			'PathOp' => 13,
-			'AbsolutePath' => 14,
-			'Path' => 16,
-			'RelativeTerm' => 19,
-			'AttributeName' => 20,
-			'Negation' => 21,
-			'Intersection' => 25,
-			'Bang' => 27,
-			'Invocation' => 28,
-			'Comparison' => 29,
-			'Subscript' => 33
+			'WildQName' => 42,
+			'WildNCName' => 17
 		}
 	},
-	{#State 23
-		ACTIONS => {
-			'' => 54
-		}
+	{#State 11
+		DEFAULT => -62
 	},
-	{#State 24
+	{#State 12
+		DEFAULT => -67
+	},
+	{#State 13
 		ACTIONS => {
-			"*" => 26,
-			'NCName' => 18,
-			'XQLName_Paren' => 12,
-			"." => 30,
-			"//" => 15,
-			"/" => 31,
-			"(" => 22,
-			"\@" => 17
+			"*" => 28,
+			'NCName' => 24,
+			'XQLName_Paren' => 21,
+			"." => 33,
+			"//" => 22,
+			"/" => 15,
+			"(" => 27,
+			"\@" => 10
 		},
 		GOTOS => {
-			'WildNCName' => 2,
-			'WildQName' => 1,
-			'RelativeTerm' => 19,
-			'AttributeName' => 20,
-			'Filter' => 3,
-			'Bang' => 27,
-			'RelativePath' => 5,
-			'LValue' => 55,
-			'Invocation' => 28,
-			'ElementName' => 10,
-			'Grouping' => 11,
-			'PathOp' => 13,
-			'AbsolutePath' => 14,
-			'Path' => 38,
-			'Subscript' => 33
+			'WildNCName' => 17,
+			'WildQName' => 18,
+			'RelativeTerm' => 11,
+			'AttributeName' => 12,
+			'Filter' => 1,
+			'Bang' => 29,
+			'RelativePath' => 2,
+			'LValue' => 43,
+			'Invocation' => 31,
+			'ElementName' => 6,
+			'Grouping' => 7,
+			'PathOp' => 23,
+			'AbsolutePath' => 8,
+			'Path' => 44,
+			'Subscript' => 34
 		}
 	},
-	{#State 25
+	{#State 14
 		ACTIONS => {
-			'UnionOp' => 56
-		},
-		DEFAULT => -25
-	},
-	{#State 26
-		DEFAULT => -3
-	},
-	{#State 27
-		ACTIONS => {
-			"//" => 15,
-			"/" => 57
-		},
-		DEFAULT => -44,
-		GOTOS => {
-			'PathOp' => 58
-		}
-	},
-	{#State 28
-		DEFAULT => -63
-	},
-	{#State 29
-		ACTIONS => {
-			"intersect" => 59
+			'UnionOp' => 45
 		},
 		DEFAULT => -27
 	},
-	{#State 30
-		DEFAULT => -62
-	},
-	{#State 31
+	{#State 15
 		ACTIONS => {
 			'XQLName_Paren' => -17,
 			"\@" => -17,
@@ -357,623 +173,860 @@ sub new {
 			"*" => -17,
 			"." => -17
 		},
-		DEFAULT => -42
+		DEFAULT => -44
+	},
+	{#State 16
+		ACTIONS => {
+			'NCName' => 24,
+			"(" => 27,
+			"any" => 13,
+			"all" => 19,
+			"*" => 28,
+			'XQLName_Paren' => 21,
+			"." => 33,
+			"//" => 22,
+			"/" => 15,
+			"\@" => 10,
+			"not" => 16
+		},
+		GOTOS => {
+			'WildNCName' => 17,
+			'WildQName' => 18,
+			'Filter' => 1,
+			'Union' => 20,
+			'RelativePath' => 2,
+			'LValue' => 3,
+			'ElementName' => 6,
+			'Grouping' => 7,
+			'PathOp' => 23,
+			'AbsolutePath' => 8,
+			'Path' => 9,
+			'RelativeTerm' => 11,
+			'AttributeName' => 12,
+			'Negation' => 46,
+			'Intersection' => 14,
+			'Bang' => 29,
+			'Invocation' => 31,
+			'Comparison' => 32,
+			'Subscript' => 34
+		}
+	},
+	{#State 17
+		ACTIONS => {
+			":" => 47
+		},
+		DEFAULT => -4
+	},
+	{#State 18
+		DEFAULT => -10
+	},
+	{#State 19
+		ACTIONS => {
+			"*" => 28,
+			'NCName' => 24,
+			'XQLName_Paren' => 21,
+			"." => 33,
+			"//" => 22,
+			"/" => 15,
+			"(" => 27,
+			"\@" => 10
+		},
+		GOTOS => {
+			'WildNCName' => 17,
+			'WildQName' => 18,
+			'RelativeTerm' => 11,
+			'AttributeName' => 12,
+			'Filter' => 1,
+			'Bang' => 29,
+			'RelativePath' => 2,
+			'LValue' => 48,
+			'Invocation' => 31,
+			'ElementName' => 6,
+			'Grouping' => 7,
+			'PathOp' => 23,
+			'AbsolutePath' => 8,
+			'Path' => 44,
+			'Subscript' => 34
+		}
+	},
+	{#State 20
+		DEFAULT => -25
+	},
+	{#State 21
+		ACTIONS => {
+			'NCName' => 24,
+			'TEXT' => 49,
+			"(" => 27,
+			"any" => 13,
+			"all" => 19,
+			")" => 53,
+			"*" => 28,
+			'NUMBER' => 50,
+			'XQLName_Paren' => 21,
+			"." => 33,
+			"//" => 22,
+			"/" => 15,
+			"\@" => 10,
+			'INTEGER' => 52,
+			"not" => 16
+		},
+		GOTOS => {
+			'WildNCName' => 17,
+			'WildQName' => 18,
+			'Filter' => 1,
+			'Union' => 20,
+			'RelativePath' => 2,
+			'LValue' => 3,
+			'Conjunction' => 4,
+			'Disjunction' => 51,
+			'Invocation_2' => 54,
+			'ElementName' => 6,
+			'Grouping' => 7,
+			'PathOp' => 23,
+			'AbsolutePath' => 8,
+			'Path' => 9,
+			'Param' => 55,
+			'RelativeTerm' => 11,
+			'Negation' => 25,
+			'AttributeName' => 12,
+			'Intersection' => 14,
+			'Bang' => 29,
+			'Invocation' => 31,
+			'Comparison' => 32,
+			'Subscript' => 34
+		}
+	},
+	{#State 22
+		DEFAULT => -18
+	},
+	{#State 23
+		ACTIONS => {
+			"*" => 28,
+			'NCName' => 24,
+			'XQLName_Paren' => 21,
+			"." => 33,
+			"(" => 27,
+			"\@" => 10
+		},
+		GOTOS => {
+			'WildNCName' => 17,
+			'WildQName' => 18,
+			'RelativeTerm' => 11,
+			'AttributeName' => 12,
+			'Filter' => 1,
+			'Bang' => 29,
+			'RelativePath' => 56,
+			'Invocation' => 31,
+			'ElementName' => 6,
+			'Grouping' => 7,
+			'Subscript' => 34
+		}
+	},
+	{#State 24
+		DEFAULT => -2
+	},
+	{#State 25
+		ACTIONS => {
+			"and" => 57
+		},
+		DEFAULT => -23
+	},
+	{#State 26
+		ACTIONS => {
+			'' => 58
+		}
+	},
+	{#State 27
+		ACTIONS => {
+			'NCName' => 24,
+			"(" => 27,
+			"any" => 13,
+			"all" => 19,
+			"*" => 28,
+			'XQLName_Paren' => 21,
+			"." => 33,
+			"//" => 22,
+			"/" => 15,
+			"\@" => 10,
+			"not" => 16
+		},
+		GOTOS => {
+			'WildNCName' => 17,
+			'WildQName' => 18,
+			'Filter' => 1,
+			'Union' => 20,
+			'RelativePath' => 2,
+			'LValue' => 3,
+			'Conjunction' => 4,
+			'Disjunction' => 5,
+			'ElementName' => 6,
+			'Grouping' => 7,
+			'PathOp' => 23,
+			'AbsolutePath' => 8,
+			'Path' => 9,
+			'RelativeTerm' => 11,
+			'AttributeName' => 12,
+			'Negation' => 25,
+			'Query' => 59,
+			'Intersection' => 14,
+			'Bang' => 29,
+			'Sequence' => 30,
+			'Invocation' => 31,
+			'Comparison' => 32,
+			'Subscript' => 34
+		}
+	},
+	{#State 28
+		DEFAULT => -3
+	},
+	{#State 29
+		ACTIONS => {
+			"//" => 22,
+			"/" => 60
+		},
+		DEFAULT => -46,
+		GOTOS => {
+			'PathOp' => 61
+		}
+	},
+	{#State 30
+		DEFAULT => -1
+	},
+	{#State 31
+		DEFAULT => -65
 	},
 	{#State 32
 		ACTIONS => {
-			'NCName' => 18,
-			"(" => 22,
-			"any" => 24,
-			"all" => 4,
-			"*" => 26,
-			'XQLName_Paren' => 12,
-			"." => 30,
-			"//" => 15,
-			"/" => 31,
-			"\@" => 17,
-			"not" => 32
+			"intersect" => 62
 		},
-		GOTOS => {
-			'WildNCName' => 2,
-			'WildQName' => 1,
-			'Filter' => 3,
-			'Union' => 7,
-			'RelativePath' => 5,
-			'LValue' => 6,
-			'ElementName' => 10,
-			'Grouping' => 11,
-			'PathOp' => 13,
-			'AbsolutePath' => 14,
-			'Path' => 16,
-			'RelativeTerm' => 19,
-			'AttributeName' => 20,
-			'Negation' => 60,
-			'Intersection' => 25,
-			'Bang' => 27,
-			'Invocation' => 28,
-			'Comparison' => 29,
-			'Subscript' => 33
-		}
+		DEFAULT => -29
 	},
 	{#State 33
-		ACTIONS => {
-			"!" => 61
-		},
-		DEFAULT => -46
+		DEFAULT => -64
 	},
 	{#State 34
 		ACTIONS => {
-			"*" => 26,
-			'NCName' => 18
+			"!" => 63
 		},
-		GOTOS => {
-			'WildNCName' => 62
-		}
+		DEFAULT => -48
 	},
 	{#State 35
 		ACTIONS => {
-			'NCName' => 18,
-			"(" => 22,
-			"any" => 24,
-			"all" => 4,
-			"*" => 26,
-			'XQLName_Paren' => 12,
-			"." => 30,
-			"//" => 15,
-			"/" => 31,
+			'NCName' => 24,
+			"(" => 27,
+			"any" => 13,
+			"all" => 19,
+			"*" => 28,
+			'XQLName_Paren' => 21,
+			"." => 33,
+			"//" => 22,
+			"/" => 15,
 			'INTEGER' => 64,
-			"\@" => 17,
-			"not" => 32
+			"\@" => 10,
+			"not" => 16
 		},
 		GOTOS => {
 			'Subquery' => 66,
-			'WildNCName' => 2,
-			'WildQName' => 1,
-			'Filter' => 3,
-			'Union' => 7,
-			'RelativePath' => 5,
-			'LValue' => 6,
-			'Disjunction' => 63,
-			'Conjunction' => 8,
-			'ElementName' => 10,
-			'Grouping' => 11,
-			'PathOp' => 13,
-			'AbsolutePath' => 14,
+			'WildNCName' => 17,
+			'WildQName' => 18,
+			'Filter' => 1,
+			'Union' => 20,
+			'RelativePath' => 2,
+			'LValue' => 3,
+			'Conjunction' => 4,
+			'Disjunction' => 5,
+			'ElementName' => 6,
+			'Grouping' => 7,
+			'PathOp' => 23,
+			'AbsolutePath' => 8,
 			'Range' => 67,
-			'Path' => 16,
+			'Path' => 9,
 			'IndexArg' => 68,
-			'RelativeTerm' => 19,
+			'RelativeTerm' => 11,
 			'IndexList' => 65,
-			'AttributeName' => 20,
-			'Negation' => 21,
-			'Intersection' => 25,
-			'Bang' => 27,
-			'Invocation' => 28,
-			'Comparison' => 29,
-			'Subscript' => 33
+			'AttributeName' => 12,
+			'Negation' => 25,
+			'Query' => 69,
+			'Intersection' => 14,
+			'Bang' => 29,
+			'Sequence' => 30,
+			'Invocation' => 31,
+			'Comparison' => 32,
+			'Subscript' => 34
 		}
 	},
 	{#State 36
-		DEFAULT => -48
+		DEFAULT => -50
 	},
 	{#State 37
 		ACTIONS => {
-			'MATCH' => 40,
-			'COMPARE' => 39
-		},
-		GOTOS => {
-			'ComparisonOp' => 69
-		}
-	},
-	{#State 38
-		DEFAULT => -35
-	},
-	{#State 39
-		DEFAULT => -29
-	},
-	{#State 40
-		DEFAULT => -30
-	},
-	{#State 41
-		ACTIONS => {
-			'NCName' => 18,
+			'NCName' => 24,
 			'TEXT' => 70,
-			"(" => 22,
-			"*" => 26,
+			"(" => 27,
+			"*" => 28,
 			'NUMBER' => 71,
-			'XQLName_Paren' => 12,
-			"." => 30,
-			"//" => 15,
-			"/" => 31,
+			'XQLName_Paren' => 21,
+			"." => 33,
+			"//" => 22,
+			"/" => 15,
 			'INTEGER' => 73,
-			"\@" => 17
+			"\@" => 10
 		},
 		GOTOS => {
-			'WildNCName' => 2,
-			'WildQName' => 1,
-			'RelativeTerm' => 19,
-			'AttributeName' => 20,
-			'Filter' => 3,
-			'Bang' => 27,
-			'RelativePath' => 5,
-			'Invocation' => 28,
-			'ElementName' => 10,
-			'Grouping' => 11,
-			'PathOp' => 13,
-			'AbsolutePath' => 14,
+			'WildNCName' => 17,
+			'WildQName' => 18,
+			'RelativeTerm' => 11,
+			'AttributeName' => 12,
+			'Filter' => 1,
+			'Bang' => 29,
+			'RelativePath' => 2,
+			'Invocation' => 31,
+			'ElementName' => 6,
+			'Grouping' => 7,
+			'PathOp' => 23,
+			'AbsolutePath' => 8,
 			'Path' => 72,
-			'Subscript' => 33,
+			'Subscript' => 34,
 			'RValue' => 74
 		}
 	},
-	{#State 42
+	{#State 38
+		DEFAULT => -31
+	},
+	{#State 39
+		DEFAULT => -32
+	},
+	{#State 40
 		ACTIONS => {
-			'NCName' => 18,
-			"(" => 22,
-			"any" => 24,
-			"all" => 4,
-			"*" => 26,
-			'XQLName_Paren' => 12,
-			"." => 30,
-			"//" => 15,
-			"/" => 31,
-			"\@" => 17,
-			"not" => 32
+			'NCName' => 24,
+			"(" => 27,
+			"any" => 13,
+			"all" => 19,
+			"*" => 28,
+			'XQLName_Paren' => 21,
+			"." => 33,
+			"//" => 22,
+			"/" => 15,
+			"\@" => 10,
+			"not" => 16
 		},
 		GOTOS => {
-			'WildNCName' => 2,
-			'WildQName' => 1,
-			'Filter' => 3,
-			'Union' => 7,
-			'RelativePath' => 5,
-			'LValue' => 6,
-			'Conjunction' => 8,
+			'WildNCName' => 17,
+			'WildQName' => 18,
+			'Filter' => 1,
+			'Union' => 20,
+			'RelativePath' => 2,
+			'LValue' => 3,
+			'Conjunction' => 4,
 			'Disjunction' => 75,
-			'ElementName' => 10,
-			'Grouping' => 11,
-			'PathOp' => 13,
-			'AbsolutePath' => 14,
-			'Path' => 16,
-			'RelativeTerm' => 19,
-			'AttributeName' => 20,
-			'Negation' => 21,
-			'Intersection' => 25,
-			'Bang' => 27,
-			'Invocation' => 28,
-			'Comparison' => 29,
-			'Subscript' => 33
+			'ElementName' => 6,
+			'Grouping' => 7,
+			'PathOp' => 23,
+			'AbsolutePath' => 8,
+			'Path' => 9,
+			'RelativeTerm' => 11,
+			'AttributeName' => 12,
+			'Negation' => 25,
+			'Intersection' => 14,
+			'Bang' => 29,
+			'Invocation' => 31,
+			'Comparison' => 32,
+			'Subscript' => 34
 		}
 	},
-	{#State 43
-		DEFAULT => -9
-	},
-	{#State 44
-		DEFAULT => -8
-	},
-	{#State 45
-		DEFAULT => -6
-	},
-	{#State 46
-		DEFAULT => -7
-	},
-	{#State 47
-		DEFAULT => -13
-	},
-	{#State 48
-		DEFAULT => -12
-	},
-	{#State 49
+	{#State 41
 		ACTIONS => {
-			"," => 77
+			'NCName' => 24,
+			"(" => 27,
+			"any" => 13,
+			"all" => 19,
+			"*" => 28,
+			'XQLName_Paren' => 21,
+			"." => 33,
+			"//" => 22,
+			"/" => 15,
+			"\@" => 10,
+			"not" => 16
 		},
-		DEFAULT => -15,
 		GOTOS => {
-			'Invocation_3' => 76
+			'WildNCName' => 17,
+			'WildQName' => 18,
+			'Filter' => 1,
+			'Union' => 20,
+			'RelativePath' => 2,
+			'LValue' => 3,
+			'Conjunction' => 4,
+			'Disjunction' => 5,
+			'ElementName' => 6,
+			'Grouping' => 7,
+			'PathOp' => 23,
+			'AbsolutePath' => 8,
+			'Path' => 9,
+			'RelativeTerm' => 11,
+			'AttributeName' => 12,
+			'Negation' => 25,
+			'Intersection' => 14,
+			'Bang' => 29,
+			'Sequence' => 76,
+			'Invocation' => 31,
+			'Comparison' => 32,
+			'Subscript' => 34
 		}
 	},
-	{#State 50
-		DEFAULT => -43
-	},
-	{#State 51
+	{#State 42
 		DEFAULT => -11
 	},
-	{#State 52
+	{#State 43
 		ACTIONS => {
-			'NCName' => 18,
-			"(" => 22,
-			"any" => 24,
-			"all" => 4,
-			"*" => 26,
-			'XQLName_Paren' => 12,
-			"." => 30,
-			"//" => 15,
-			"/" => 31,
-			"\@" => 17,
-			"not" => 32
+			'MATCH' => 39,
+			'COMPARE' => 38
 		},
 		GOTOS => {
-			'WildNCName' => 2,
-			'WildQName' => 1,
-			'Filter' => 3,
-			'Union' => 7,
-			'RelativePath' => 5,
-			'LValue' => 6,
-			'Conjunction' => 78,
-			'ElementName' => 10,
-			'Grouping' => 11,
-			'PathOp' => 13,
-			'AbsolutePath' => 14,
-			'Path' => 16,
-			'RelativeTerm' => 19,
-			'AttributeName' => 20,
-			'Negation' => 21,
-			'Intersection' => 25,
-			'Bang' => 27,
-			'Invocation' => 28,
-			'Comparison' => 29,
-			'Subscript' => 33
+			'ComparisonOp' => 77
 		}
 	},
-	{#State 53
+	{#State 44
+		DEFAULT => -37
+	},
+	{#State 45
 		ACTIONS => {
-			")" => 79
+			'NCName' => 24,
+			"(" => 27,
+			"any" => 13,
+			"all" => 19,
+			"*" => 28,
+			'XQLName_Paren' => 21,
+			"." => 33,
+			"//" => 22,
+			"/" => 15,
+			"\@" => 10
+		},
+		GOTOS => {
+			'WildNCName' => 17,
+			'WildQName' => 18,
+			'Filter' => 1,
+			'Union' => 78,
+			'RelativePath' => 2,
+			'LValue' => 3,
+			'ElementName' => 6,
+			'Grouping' => 7,
+			'PathOp' => 23,
+			'AbsolutePath' => 8,
+			'Path' => 9,
+			'RelativeTerm' => 11,
+			'AttributeName' => 12,
+			'Intersection' => 14,
+			'Bang' => 29,
+			'Invocation' => 31,
+			'Comparison' => 32,
+			'Subscript' => 34
 		}
 	},
-	{#State 54
-		DEFAULT => -0
+	{#State 46
+		DEFAULT => -26
 	},
-	{#State 55
+	{#State 47
 		ACTIONS => {
-			'MATCH' => 40,
-			'COMPARE' => 39
+			"*" => 28,
+			'NCName' => 24
+		},
+		GOTOS => {
+			'WildNCName' => 79
+		}
+	},
+	{#State 48
+		ACTIONS => {
+			'MATCH' => 39,
+			'COMPARE' => 38
 		},
 		GOTOS => {
 			'ComparisonOp' => 80
 		}
 	},
-	{#State 56
+	{#State 49
+		DEFAULT => -9
+	},
+	{#State 50
+		DEFAULT => -8
+	},
+	{#State 51
+		DEFAULT => -6
+	},
+	{#State 52
+		DEFAULT => -7
+	},
+	{#State 53
+		DEFAULT => -13
+	},
+	{#State 54
+		DEFAULT => -12
+	},
+	{#State 55
 		ACTIONS => {
-			'NCName' => 18,
-			"(" => 22,
-			"any" => 24,
-			"all" => 4,
-			"*" => 26,
-			'XQLName_Paren' => 12,
-			"." => 30,
-			"//" => 15,
-			"/" => 31,
-			"\@" => 17
+			"," => 82
 		},
+		DEFAULT => -15,
 		GOTOS => {
-			'WildNCName' => 2,
-			'WildQName' => 1,
-			'Filter' => 3,
-			'Union' => 81,
-			'RelativePath' => 5,
-			'LValue' => 6,
-			'ElementName' => 10,
-			'Grouping' => 11,
-			'PathOp' => 13,
-			'AbsolutePath' => 14,
-			'Path' => 16,
-			'RelativeTerm' => 19,
-			'AttributeName' => 20,
-			'Intersection' => 25,
-			'Bang' => 27,
-			'Invocation' => 28,
-			'Comparison' => 29,
-			'Subscript' => 33
+			'Invocation_3' => 81
 		}
+	},
+	{#State 56
+		DEFAULT => -45
 	},
 	{#State 57
-		DEFAULT => -17
-	},
-	{#State 58
 		ACTIONS => {
-			"*" => 26,
-			'NCName' => 18,
-			'XQLName_Paren' => 12,
-			"." => 30,
-			"(" => 22,
-			"\@" => 17
+			'NCName' => 24,
+			"(" => 27,
+			"any" => 13,
+			"all" => 19,
+			"*" => 28,
+			'XQLName_Paren' => 21,
+			"." => 33,
+			"//" => 22,
+			"/" => 15,
+			"\@" => 10,
+			"not" => 16
 		},
 		GOTOS => {
-			'WildNCName' => 2,
-			'WildQName' => 1,
-			'RelativeTerm' => 19,
-			'AttributeName' => 20,
-			'Filter' => 3,
-			'Bang' => 27,
-			'RelativePath' => 82,
-			'Invocation' => 28,
-			'ElementName' => 10,
-			'Grouping' => 11,
-			'Subscript' => 33
+			'WildNCName' => 17,
+			'WildQName' => 18,
+			'Filter' => 1,
+			'Union' => 20,
+			'RelativePath' => 2,
+			'LValue' => 3,
+			'Conjunction' => 83,
+			'ElementName' => 6,
+			'Grouping' => 7,
+			'PathOp' => 23,
+			'AbsolutePath' => 8,
+			'Path' => 9,
+			'RelativeTerm' => 11,
+			'AttributeName' => 12,
+			'Negation' => 25,
+			'Intersection' => 14,
+			'Bang' => 29,
+			'Invocation' => 31,
+			'Comparison' => 32,
+			'Subscript' => 34
 		}
+	},
+	{#State 58
+		DEFAULT => -0
 	},
 	{#State 59
 		ACTIONS => {
-			'NCName' => 18,
-			"(" => 22,
-			"any" => 24,
-			"all" => 4,
-			"*" => 26,
-			'XQLName_Paren' => 12,
-			"." => 30,
-			"//" => 15,
-			"/" => 31,
-			"\@" => 17
-		},
-		GOTOS => {
-			'WildNCName' => 2,
-			'WildQName' => 1,
-			'Filter' => 3,
-			'RelativePath' => 5,
-			'LValue' => 6,
-			'ElementName' => 10,
-			'Grouping' => 11,
-			'PathOp' => 13,
-			'AbsolutePath' => 14,
-			'Path' => 16,
-			'RelativeTerm' => 19,
-			'AttributeName' => 20,
-			'Intersection' => 83,
-			'Bang' => 27,
-			'Invocation' => 28,
-			'Comparison' => 29,
-			'Subscript' => 33
+			")" => 84
 		}
 	},
 	{#State 60
-		DEFAULT => -24
+		DEFAULT => -17
 	},
 	{#State 61
 		ACTIONS => {
-			'XQLName_Paren' => 12
+			"*" => 28,
+			'NCName' => 24,
+			'XQLName_Paren' => 21,
+			"." => 33,
+			"(" => 27,
+			"\@" => 10
 		},
 		GOTOS => {
-			'Invocation' => 84
+			'WildNCName' => 17,
+			'WildQName' => 18,
+			'RelativeTerm' => 11,
+			'AttributeName' => 12,
+			'Filter' => 1,
+			'Bang' => 29,
+			'RelativePath' => 85,
+			'Invocation' => 31,
+			'ElementName' => 6,
+			'Grouping' => 7,
+			'Subscript' => 34
 		}
 	},
 	{#State 62
-		DEFAULT => -5
+		ACTIONS => {
+			'NCName' => 24,
+			"(" => 27,
+			"any" => 13,
+			"all" => 19,
+			"*" => 28,
+			'XQLName_Paren' => 21,
+			"." => 33,
+			"//" => 22,
+			"/" => 15,
+			"\@" => 10
+		},
+		GOTOS => {
+			'WildNCName' => 17,
+			'WildQName' => 18,
+			'Filter' => 1,
+			'RelativePath' => 2,
+			'LValue' => 3,
+			'ElementName' => 6,
+			'Grouping' => 7,
+			'PathOp' => 23,
+			'AbsolutePath' => 8,
+			'Path' => 9,
+			'RelativeTerm' => 11,
+			'AttributeName' => 12,
+			'Intersection' => 86,
+			'Bang' => 29,
+			'Invocation' => 31,
+			'Comparison' => 32,
+			'Subscript' => 34
+		}
 	},
 	{#State 63
-		DEFAULT => -59
+		ACTIONS => {
+			'XQLName_Paren' => 21
+		},
+		GOTOS => {
+			'Invocation' => 87
+		}
 	},
 	{#State 64
 		ACTIONS => {
-			"to" => 85
+			"to" => 88
 		},
-		DEFAULT => -54
+		DEFAULT => -56
 	},
 	{#State 65
 		ACTIONS => {
-			"]" => 86
+			"]" => 89
 		}
 	},
 	{#State 66
 		ACTIONS => {
-			"]" => 87
+			"]" => 90
 		}
 	},
 	{#State 67
-		DEFAULT => -55
+		DEFAULT => -57
 	},
 	{#State 68
 		ACTIONS => {
-			"," => 89
+			"," => 92
 		},
-		DEFAULT => -52,
+		DEFAULT => -54,
 		GOTOS => {
-			'IndexList_2' => 88
+			'IndexList_2' => 91
 		}
 	},
 	{#State 69
-		ACTIONS => {
-			'NCName' => 18,
-			'TEXT' => 70,
-			"(" => 22,
-			"*" => 26,
-			'NUMBER' => 71,
-			'XQLName_Paren' => 12,
-			"." => 30,
-			"//" => 15,
-			"/" => 31,
-			'INTEGER' => 73,
-			"\@" => 17
-		},
-		GOTOS => {
-			'WildNCName' => 2,
-			'WildQName' => 1,
-			'RelativeTerm' => 19,
-			'AttributeName' => 20,
-			'Filter' => 3,
-			'Bang' => 27,
-			'RelativePath' => 5,
-			'Invocation' => 28,
-			'ElementName' => 10,
-			'Grouping' => 11,
-			'PathOp' => 13,
-			'AbsolutePath' => 14,
-			'Path' => 72,
-			'Subscript' => 33,
-			'RValue' => 90
-		}
+		DEFAULT => -61
 	},
 	{#State 70
-		DEFAULT => -39
+		DEFAULT => -41
 	},
 	{#State 71
-		DEFAULT => -38
+		DEFAULT => -40
 	},
 	{#State 72
-		DEFAULT => -36
+		DEFAULT => -38
 	},
 	{#State 73
-		DEFAULT => -37
+		DEFAULT => -39
 	},
 	{#State 74
-		DEFAULT => -32
+		DEFAULT => -34
 	},
 	{#State 75
-		DEFAULT => -20
+		DEFAULT => -22
 	},
 	{#State 76
-		ACTIONS => {
-			")" => 91
-		}
+		DEFAULT => -20
 	},
 	{#State 77
 		ACTIONS => {
-			'NCName' => 18,
-			'TEXT' => 43,
-			"(" => 22,
-			"any" => 24,
-			"all" => 4,
-			"*" => 26,
-			'NUMBER' => 44,
-			'XQLName_Paren' => 12,
-			"." => 30,
-			"//" => 15,
-			"/" => 31,
-			"\@" => 17,
-			'INTEGER' => 46,
-			"not" => 32
-		},
-		GOTOS => {
-			'WildNCName' => 2,
-			'WildQName' => 1,
-			'Filter' => 3,
-			'Union' => 7,
-			'RelativePath' => 5,
-			'LValue' => 6,
-			'Conjunction' => 8,
-			'Disjunction' => 45,
-			'ElementName' => 10,
-			'Grouping' => 11,
-			'PathOp' => 13,
-			'AbsolutePath' => 14,
-			'Path' => 16,
-			'Param' => 92,
-			'RelativeTerm' => 19,
-			'Negation' => 21,
-			'AttributeName' => 20,
-			'Intersection' => 25,
-			'Bang' => 27,
-			'Invocation' => 28,
-			'Comparison' => 29,
-			'Subscript' => 33
-		}
-	},
-	{#State 78
-		DEFAULT => -22
-	},
-	{#State 79
-		DEFAULT => -61
-	},
-	{#State 80
-		ACTIONS => {
-			'NCName' => 18,
+			'NCName' => 24,
 			'TEXT' => 70,
-			"(" => 22,
-			"*" => 26,
+			"(" => 27,
+			"*" => 28,
 			'NUMBER' => 71,
-			'XQLName_Paren' => 12,
-			"." => 30,
-			"//" => 15,
-			"/" => 31,
+			'XQLName_Paren' => 21,
+			"." => 33,
+			"//" => 22,
+			"/" => 15,
 			'INTEGER' => 73,
-			"\@" => 17
+			"\@" => 10
 		},
 		GOTOS => {
-			'WildNCName' => 2,
-			'WildQName' => 1,
-			'RelativeTerm' => 19,
-			'AttributeName' => 20,
-			'Filter' => 3,
-			'Bang' => 27,
-			'RelativePath' => 5,
-			'Invocation' => 28,
-			'ElementName' => 10,
-			'Grouping' => 11,
-			'PathOp' => 13,
-			'AbsolutePath' => 14,
+			'WildNCName' => 17,
+			'WildQName' => 18,
+			'RelativeTerm' => 11,
+			'AttributeName' => 12,
+			'Filter' => 1,
+			'Bang' => 29,
+			'RelativePath' => 2,
+			'Invocation' => 31,
+			'ElementName' => 6,
+			'Grouping' => 7,
+			'PathOp' => 23,
+			'AbsolutePath' => 8,
 			'Path' => 72,
-			'Subscript' => 33,
+			'Subscript' => 34,
 			'RValue' => 93
 		}
 	},
-	{#State 81
-		DEFAULT => -26
-	},
-	{#State 82
-		DEFAULT => -45
-	},
-	{#State 83
+	{#State 78
 		DEFAULT => -28
 	},
-	{#State 84
-		DEFAULT => -47
+	{#State 79
+		DEFAULT => -5
 	},
-	{#State 85
+	{#State 80
 		ACTIONS => {
-			'INTEGER' => 94
+			'NCName' => 24,
+			'TEXT' => 70,
+			"(" => 27,
+			"*" => 28,
+			'NUMBER' => 71,
+			'XQLName_Paren' => 21,
+			"." => 33,
+			"//" => 22,
+			"/" => 15,
+			'INTEGER' => 73,
+			"\@" => 10
+		},
+		GOTOS => {
+			'WildNCName' => 17,
+			'WildQName' => 18,
+			'RelativeTerm' => 11,
+			'AttributeName' => 12,
+			'Filter' => 1,
+			'Bang' => 29,
+			'RelativePath' => 2,
+			'Invocation' => 31,
+			'ElementName' => 6,
+			'Grouping' => 7,
+			'PathOp' => 23,
+			'AbsolutePath' => 8,
+			'Path' => 72,
+			'Subscript' => 34,
+			'RValue' => 94
 		}
 	},
+	{#State 81
+		ACTIONS => {
+			")" => 95
+		}
+	},
+	{#State 82
+		ACTIONS => {
+			'NCName' => 24,
+			'TEXT' => 49,
+			"(" => 27,
+			"any" => 13,
+			"all" => 19,
+			"*" => 28,
+			'NUMBER' => 50,
+			'XQLName_Paren' => 21,
+			"." => 33,
+			"//" => 22,
+			"/" => 15,
+			"\@" => 10,
+			'INTEGER' => 52,
+			"not" => 16
+		},
+		GOTOS => {
+			'WildNCName' => 17,
+			'WildQName' => 18,
+			'Filter' => 1,
+			'Union' => 20,
+			'RelativePath' => 2,
+			'LValue' => 3,
+			'Conjunction' => 4,
+			'Disjunction' => 51,
+			'ElementName' => 6,
+			'Grouping' => 7,
+			'PathOp' => 23,
+			'AbsolutePath' => 8,
+			'Path' => 9,
+			'Param' => 96,
+			'RelativeTerm' => 11,
+			'Negation' => 25,
+			'AttributeName' => 12,
+			'Intersection' => 14,
+			'Bang' => 29,
+			'Invocation' => 31,
+			'Comparison' => 32,
+			'Subscript' => 34
+		}
+	},
+	{#State 83
+		DEFAULT => -24
+	},
+	{#State 84
+		DEFAULT => -63
+	},
+	{#State 85
+		DEFAULT => -47
+	},
 	{#State 86
-		DEFAULT => -50
+		DEFAULT => -30
 	},
 	{#State 87
-		DEFAULT => -58
+		DEFAULT => -49
 	},
 	{#State 88
-		DEFAULT => -51
+		ACTIONS => {
+			'INTEGER' => 97
+		}
 	},
 	{#State 89
+		DEFAULT => -52
+	},
+	{#State 90
+		DEFAULT => -60
+	},
+	{#State 91
+		DEFAULT => -53
+	},
+	{#State 92
 		ACTIONS => {
 			'INTEGER' => 64
 		},
 		GOTOS => {
-			'IndexArg' => 95,
+			'IndexArg' => 98,
 			'Range' => 67
 		}
 	},
-	{#State 90
-		DEFAULT => -34
+	{#State 93
+		DEFAULT => -35
 	},
-	{#State 91
+	{#State 94
+		DEFAULT => -36
+	},
+	{#State 95
 		DEFAULT => -14
 	},
-	{#State 92
+	{#State 96
 		ACTIONS => {
-			"," => 77
+			"," => 82
 		},
 		DEFAULT => -15,
 		GOTOS => {
-			'Invocation_3' => 96
+			'Invocation_3' => 99
 		}
-	},
-	{#State 93
-		DEFAULT => -33
-	},
-	{#State 94
-		DEFAULT => -56
-	},
-	{#State 95
-		ACTIONS => {
-			"," => 89
-		},
-		DEFAULT => -52,
-		GOTOS => {
-			'IndexList_2' => 97
-		}
-	},
-	{#State 96
-		DEFAULT => -16
 	},
 	{#State 97
-		DEFAULT => -53
+		DEFAULT => -58
+	},
+	{#State 98
+		ACTIONS => {
+			"," => 92
+		},
+		DEFAULT => -54,
+		GOTOS => {
+			'IndexList_2' => 100
+		}
+	},
+	{#State 99
+		DEFAULT => -16
+	},
+	{#State 100
+		DEFAULT => -55
 	}
 ],
                                   yyrules  =>
@@ -1079,72 +1132,83 @@ sub {
 		 'PathOp', 1, undef
 	],
 	[#Rule 19
-		 'Disjunction', 1, undef
+		 'Sequence', 1, undef
 	],
 	[#Rule 20
+		 'Sequence', 3,
+sub {
+
+		    new XML::XQL::Sequence (Left => $_[1], Oper => $_[2], 
+					    Right => $_[3]); 
+}
+	],
+	[#Rule 21
+		 'Disjunction', 1, undef
+	],
+	[#Rule 22
 		 'Disjunction', 3,
 sub {
  
 		    new XML::XQL::Or (Left => $_[1], Right => $_[3]); 
 }
 	],
-	[#Rule 21
+	[#Rule 23
 		 'Conjunction', 1, undef
 	],
-	[#Rule 22
+	[#Rule 24
 		 'Conjunction', 3,
 sub {
  
 		    new XML::XQL::And (Left => $_[1], Right => $_[3]); 
 }
 	],
-	[#Rule 23
+	[#Rule 25
 		 'Negation', 1, undef
 	],
-	[#Rule 24
+	[#Rule 26
 		 'Negation', 2,
 sub {
  new XML::XQL::Not (Left => $_[2]); 
 }
 	],
-	[#Rule 25
+	[#Rule 27
 		 'Union', 1, undef
 	],
-	[#Rule 26
+	[#Rule 28
 		 'Union', 3,
 sub {
  
 		    new XML::XQL::Union (Left => $_[1], Right => $_[3]); 
 }
 	],
-	[#Rule 27
+	[#Rule 29
 		 'Intersection', 1, undef
 	],
-	[#Rule 28
+	[#Rule 30
 		 'Intersection', 3,
 sub {
  
 		    new XML::XQL::Intersect ($_[1], $_[3]); 
 }
 	],
-	[#Rule 29
-		 'ComparisonOp', 1,
-sub {
-
-		  [ $_[1], $_[0]->{Query}->findComparisonOperator ($_[1]) ]; 
-}
-	],
-	[#Rule 30
-		 'ComparisonOp', 1,
-sub {
-
-		  [ $_[1], $_[0]->{Query}->findComparisonOperator ($_[1]) ]; 
-}
-	],
 	[#Rule 31
-		 'Comparison', 1, undef
+		 'ComparisonOp', 1,
+sub {
+
+		  [ $_[1], $_[0]->{Query}->findComparisonOperator ($_[1]) ]; 
+}
 	],
 	[#Rule 32
+		 'ComparisonOp', 1,
+sub {
+
+		  [ $_[1], $_[0]->{Query}->findComparisonOperator ($_[1]) ]; 
+}
+	],
+	[#Rule 33
+		 'Comparison', 1, undef
+	],
+	[#Rule 34
 		 'Comparison', 3,
 sub {
 
@@ -1153,7 +1217,7 @@ sub {
 				Right => $_[3]); 
 }
 	],
-	[#Rule 33
+	[#Rule 35
 		 'Comparison', 4,
 sub {
 
@@ -1162,7 +1226,7 @@ sub {
 				Right => $_[4]); 
 }
 	],
-	[#Rule 34
+	[#Rule 36
 		 'Comparison', 4,
 sub {
 
@@ -1171,53 +1235,53 @@ sub {
 				Right => $_[4]); 
 }
 	],
-	[#Rule 35
+	[#Rule 37
 		 'LValue', 1, undef
 	],
-	[#Rule 36
+	[#Rule 38
 		 'RValue', 1, undef
 	],
-	[#Rule 37
-		 'RValue', 1,
-sub {
- new XML::XQL::Number ($_[1]); 
-}
-	],
-	[#Rule 38
-		 'RValue', 1,
-sub {
- new XML::XQL::Number ($_[1]); 
-}
-	],
 	[#Rule 39
+		 'RValue', 1,
+sub {
+ new XML::XQL::Number ($_[1]); 
+}
+	],
+	[#Rule 40
+		 'RValue', 1,
+sub {
+ new XML::XQL::Number ($_[1]); 
+}
+	],
+	[#Rule 41
 		 'RValue', 1,
 sub {
  new XML::XQL::Text ($_[1]); 
 }
 	],
-	[#Rule 40
-		 'Path', 1, undef
-	],
-	[#Rule 41
-		 'Path', 1, undef
-	],
 	[#Rule 42
+		 'Path', 1, undef
+	],
+	[#Rule 43
+		 'Path', 1, undef
+	],
+	[#Rule 44
 		 'AbsolutePath', 1,
 sub {
  new XML::Root; 
 }
 	],
-	[#Rule 43
+	[#Rule 45
 		 'AbsolutePath', 2,
 sub {
  
 		    new XML::XQL::Path (PathOp => $_[1], Right => $_[2]); 
 }
 	],
-	[#Rule 44
+	[#Rule 46
 		 'RelativePath', 1, undef
 	],
-	[#Rule 45
+	[#Rule 47
 		 'RelativePath', 3,
 sub {
  
@@ -1225,10 +1289,10 @@ sub {
 				        Right => $_[3]); 
 }
 	],
-	[#Rule 46
+	[#Rule 48
 		 'Bang', 1, undef
 	],
-	[#Rule 47
+	[#Rule 49
 		 'Bang', 3,
 sub {
 
@@ -1239,7 +1303,7 @@ sub {
 				        Right => $_[3]); 
 }
 	],
-	[#Rule 48
+	[#Rule 50
 		 'Subscript', 2,
 sub {
  
@@ -1248,43 +1312,43 @@ sub {
 					    IndexList => $_[2]) : $_[1]; 
 }
 	],
-	[#Rule 49
+	[#Rule 51
 		 'Subscript_2', 0, undef
 	],
-	[#Rule 50
+	[#Rule 52
 		 'Subscript_2', 3,
 sub {
  $_[2]; 
 }
 	],
-	[#Rule 51
+	[#Rule 53
 		 'IndexList', 2,
 sub {
  push (@{$_[1]}, @{$_[2]}); $_[1]; 
 }
 	],
-	[#Rule 52
+	[#Rule 54
 		 'IndexList_2', 0,
 sub {
  [] 
 }
 	],
-	[#Rule 53
+	[#Rule 55
 		 'IndexList_2', 3,
 sub {
  push (@{$_[2]}, @{$_[3]}); $_[2]; 
 }
 	],
-	[#Rule 54
+	[#Rule 56
 		 'IndexArg', 1,
 sub {
  [ $_[1], $_[1] ]; 
 }
 	],
-	[#Rule 55
+	[#Rule 57
 		 'IndexArg', 1, undef
 	],
-	[#Rule 56
+	[#Rule 58
 		 'Range', 3,
 sub {
 
@@ -1299,41 +1363,41 @@ sub {
 		    [ $_[1], $_[3] ]; 
 }
 	],
-	[#Rule 57
+	[#Rule 59
 		 'Filter', 1, undef
 	],
-	[#Rule 58
+	[#Rule 60
 		 'Filter', 4,
 sub {
  
 			new XML::XQL::Filter (Left => $_[1], Right => $_[3]); 
 }
 	],
-	[#Rule 59
+	[#Rule 61
 		 'Subquery', 1, undef
 	],
-	[#Rule 60
+	[#Rule 62
 		 'Grouping', 1, undef
 	],
-	[#Rule 61
+	[#Rule 63
 		 'Grouping', 3,
 sub {
  $_[2]; 
 }
 	],
-	[#Rule 62
+	[#Rule 64
 		 'RelativeTerm', 1,
 sub {
  new XML::XQL::Current; 
 }
 	],
-	[#Rule 63
-		 'RelativeTerm', 1, undef
-	],
-	[#Rule 64
-		 'RelativeTerm', 1, undef
-	],
 	[#Rule 65
+		 'RelativeTerm', 1, undef
+	],
+	[#Rule 66
+		 'RelativeTerm', 1, undef
+	],
+	[#Rule 67
 		 'RelativeTerm', 1, undef
 	]
 ],

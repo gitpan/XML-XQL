@@ -28,20 +28,24 @@ sub assert_output
 
 $dom = new XML::DOM::Parser;
 my $str = <<END;
-<highest>
-	<high>It is 
-		<medium>It is medium0 in high0 node</medium>high0
-	</high>
-	<high>It
-	is high
- 	1</high>
-</highest>
+<TABLE>
+ <ROWS>
+  <TR>
+   <TD>Shady Grove</TD>
+   <TD>Aeolian</TD>
+  </TR>
+  <TR>
+   <TD>Over the River, Charlie</TD>
+   <TD>Dorian</TD>
+  </TR>
+ </ROWS>
+</TABLE>
 END
 
 my $doc = $dom->parse ($str);
 assert_ok ($doc); 
 
-@result = XML::XQL::solve ('/highest/high!text(0)', $doc);
+@result = XML::XQL::solve ('//(TD="Shady Grove" ; TD)', $doc);
 
 $result = XML::XQL::Debug::str (\@result);
 
@@ -51,11 +55,13 @@ assert_output ($result);
 __DATA__
 <array>
   <item index='0'>
-    <obj type='XML::XQL::Text'>It is high0</obj>
+    <obj type='XML::DOM::Element'>
+<TD>Shady Grove</TD>
+    </obj>
   </item>
   <item index='1'>
-    <obj type='XML::XQL::Text'>It
-	is high
- 	1</obj>
+    <obj type='XML::DOM::Element'>
+<TD>Aeolian</TD>
+    </obj>
   </item>
 </array>

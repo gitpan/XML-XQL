@@ -23,9 +23,12 @@ WriteMakefile(
               NAME	=> 'XML::XQL',
               dist      => {COMPRESS => 'gzip', SUFFIX => '.gz'},
               VERSION_FROM => 'XQL.pm',
-              PREREQ_PM => { Date::Manip => '0', 
+
+	      # Maybe requiring Date::Manip 5.33 is too strict,
+	      # it's what I was using. I know 5.20 doesn't work.
+              PREREQ_PM => { Date::Manip => '5.33', 
 			     Parse::Yapp => '0',
-			     XML::DOM => '0' },
+			     XML::DOM => '1.12' },
 	      EXE_FILES => [ 'samples/xql.pl'],
 	      @extras
              );

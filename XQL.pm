@@ -7,13 +7,16 @@
 #
 # To do (in no particular order):
 #
+# - xml:space=preserve still needs to be adhered to in text() etc.
 # - XQL functions (like value()) should probably work on input lists > 1 node
+#   (The code was changed, but it needs to be tested. ancestor() wasn't fixed)
 # - verify implementation of xql_namespace
 # - verify implementation of end, index
 # - check passing of context to the solve() methods
 # - functions/methods may be wrong. They receive the entire LHS set,
 #   so count() is right, but the rest may be wrong!
 # - implement xml:space="preserve"
+#   - already added xql_preserveSpace. Still need to use it in (raw)text() etc.
 # - may need to use different comment delimiters, '#' may be used in future XQL
 #   definition (according to Joe Lapp, one of the XQL spec authors)
 # - caching of Node xql_values (?)
@@ -47,6 +50,9 @@
 #     - could add a flag that says "don't worry about document order for $union$"
 #   - user defined sort?
 # - OPTIMIZE!
+#   - Subscript operator
+#   - Filter operator
+#   - etc.
 
 package XML::XQL;
 
@@ -58,14 +64,14 @@ use vars qw( @EXPORT $VERSION
 	     %Func %Method %FuncArgCount
 	     %AllowedOutsideSubquery %ConstFunc %ExpandedType
 	     $Restricted $Included $ReName $ReXQLName
-	     %CompareOper $Token_q $Token_qq
+	     %CompareOper $Token_q $Token_qq $LAST_SORT_KEY
 	   );
 
 @EXPORT = qw( $VERSION $Restricted $Included );
 
 BEGIN
 {
-    $VERSION = '0.58';
+    $VERSION = '0.60';
 
     die "XML::XQL is already used/required" if defined $Included;
     $Included = 1;
@@ -193,28 +199,30 @@ sub Lexer
 	    }
 	}
 
-	s/^(-?\d+\.(\d+)?)//o		and return ('NUMBER', $1);
-	s/^(-?\d+)//o			and return ('INTEGER', $1);
+	s/^(-?\d+\.(\d+)?)//		and return ('NUMBER', $1);
+	s/^(-?\d+)//			and return ('INTEGER', $1);
 
-	s/^(\$|\b)(i?(eq|ne|lt|le|gt|ge))\1(?=\W)//io
+	s/^(\$|\b)(i?(eq|ne|lt|le|gt|ge))\1(?=\W)//i
 					and return ('COMPARE', "\L$2");
 
-	s/^(\$|\b)(any|all|or|and|not|to|intersect)\1(?=\W)//io
+	s/^(\$|\b)(any|all|or|and|not|to|intersect)\1(?=\W)//i
 					and return ("\L$2", $&);
 
-  	s/^((\$|\b)union\2(?=\W)|\|)//io	and return ('UnionOp', $&);
+  	s/^((\$|\b)union\2(?=\W)|\|)//i	and return ('UnionOp', $&);
+
+  	s/^(;;?)//			and return ('SeqOp', $1);
 
 	if (not $Restricted)
 	{
-	    s/^(=~|!~)//o		and return ('MATCH', $1);
-	    s/^\$((no_)?match)\$//io
+	    s/^(=~|!~)//		and return ('MATCH', $1);
+	    s/^\$((no_)?match)\$//i
 					and return ('MATCH', "\L$1");
 	    s/^\$($ReXQLName)\$//o	and return ('COMPARE', $1);
 	}
 
-	s/^(=|!=|<|<=|>|>=)//o		and return ('COMPARE', $1);
+	s/^(=|!=|<|<=|>|>=)//		and return ('COMPARE', $1);
 
-	s!^(//|/|\(|\)|\.|@|\!|\[|\]|\*|:|,)!!o
+	s!^(//|/|\(|\)|\.|@|\!|\[|\]|\*|:|,)!!
 					and return ($1, $1);
 
  	s/^($ReXQLName)\s*\(//o
@@ -297,9 +305,85 @@ sub prepareRvalue
 
 sub trimSpace
 {
-    my $text = shift;
-    $text =~ s/^\s*(.*?)\s*$/$1/o;
-    $text;
+    $_[0] =~ s/^\s+//;
+    $_[0] =~ s/\s+$//;
+    $_[0];
+}
+
+# Assumption: max. 32768 (2**15 = 2**($BITS-1)) children (or attributes) per node
+# Use setMaxChildren() to support larger offspring.
+my $BITS = 16;
+$LAST_SORT_KEY = (2 ** $BITS) - 1;
+
+# Call with values: $max = 128 * (256**N), where N=0, 1, 2, ...
+sub setMaxChildren
+{
+    my $max = shift;
+    my $m = 128;
+    $BITS = 8;
+    while ($max > $m)
+    {
+	$m = $m * 256;
+	$BITS += 8;
+    }
+    $LAST_SORT_KEY = (2 ** $BITS) - 1;
+}
+
+sub createSortKey
+{
+    # $_[0] = parent sort key, $_[1] = child index, 
+    # $_[2] = 0 for attribute nodes, 1 for other node types
+    my $vec = "";
+    vec ($vec, 0, $BITS) = $_[1];
+    vec ($vec, 7, 1) = $_[2] if $_[2];	# set leftmost bit (for non-attributes)
+    $_[0] . $vec;
+}
+
+#--------------- Sorting source nodes ----------------------------------------
+
+# Sort the list by 'document order' (as per the XQL spec.)
+# Values with an associated source node are sorted by the position of their 
+# source node in the XML document.
+# Values without a source node are placed at the end of the resulting list.
+# The source node of an Attribute node, is its (parent) Element node 
+# (per definition.) The source node of the other types of XML nodes, is itself.
+# The order for values with the same source node is undefined.
+
+sub sortDocOrder
+{
+#?? or should I just use: sort { $a->xql_sortKey cmp $b->xql_sortKey }
+
+    my $list = shift;
+    @$list =	map { $_->[1] }			# 3) extract nodes
+		sort { $a->[0] cmp $b->[0] }	# 2) sort by sortKey
+		map { [$_->xql_sortKey, $_] }	# 1) make [sortKey,node] records
+		@$list;
+    $list;
+}
+
+# Converts sort key from createSortKey in human readable form
+# For debugging only.
+sub keyStr
+{
+    my $key = shift;
+    my $n = $BITS / 8;
+    my $bitn = 2 ** ($BITS - 1);
+    my $str;
+    for (my $i = 0; $i < length $key; $i += $n)
+    {
+	my $dig = substr ($key, $i, $n);
+	my $v = vec ($dig, 0, $BITS);
+	my $elem = 0;
+	if ($v >= $bitn)
+	{
+	    $v -= $bitn;
+	    $elem = 1;
+	}
+	$str .= "/" if defined $str;
+	$str .= "@" unless $elem;
+	$str .= $v;
+    }
+    $str;
 }
 
 sub isEmptyList
@@ -698,14 +782,14 @@ sub defineMethod
  'le' => \&XML::XQL::xql_le,
  'ge' => \&XML::XQL::xql_ge,
  'gt' => \&XML::XQL::xql_gt,
- 'le' => \&XML::XQL::xql_le,
+ 'lt' => \&XML::XQL::xql_lt,
 
  'ieq' => \&XML::XQL::xql_ieq,
  'ine' => \&XML::XQL::xql_ine,
  'ile' => \&XML::XQL::xql_ile,
  'ige' => \&XML::XQL::xql_ige,
  'igt' => \&XML::XQL::xql_igt,
- 'ile' => \&XML::XQL::xql_ile,
+ 'ilt' => \&XML::XQL::xql_ilt,
 
  '='  => \&XML::XQL::xql_eq,
  '!=' => \&XML::XQL::xql_ne,
@@ -841,6 +925,7 @@ sub d
     $n;
 }
 
+
 package XML::XQL::Query;
 
 use Carp;
@@ -942,6 +1027,15 @@ sub solve
 sub toString
 {
     $_[0]->{Expr};
+}
+
+sub toDOM
+{
+    my ($self, $doc) = @_;
+    my $root = $doc->createElement ("XQL");
+    $doc->appendChild ($root);
+    $root->appendChild ($self->{Tree}->xql_toDOM ($doc));
+    $doc;
 }
 
 sub findComparisonOperator
@@ -1068,7 +1162,34 @@ sub xql_prepCache
     $self->{Right}->xql_prepCache if defined $self->{Right};
 }
 
+sub xql_toDOM
+{
+    my ($self, $doc) = @_;
+    my $name = ref $self;
+    $name =~ s/.*:://;
+    my $elem = $doc->createElement ($name);
+    if (defined $self->{Left})
+    {
+	my $left = $doc->createElement ("left");
+	$elem->appendChild ($left);
+	$left->appendChild ($self->{Left}->xql_toDOM ($doc));
+    }
+    if (defined $self->{Right})
+    {
+	my $right = $doc->createElement ("right");
+	$elem->appendChild ($right);
+	$right->appendChild ($self->{Right}->xql_toDOM ($doc));
+    }
+    $elem;
+}
+
 sub isConstant
+{
+    0;
+}
+
+# Overriden by Union and Path operators
+sub mustSort
 {
     0;
 }
@@ -1195,7 +1316,7 @@ sub solve
 	    my $nodeType = $node->xql_nodeType;
 	    next NODE unless ($nodeType == 1 || $nodeType == 9);
 	    
-	    # Skip the node if one of it's ancestors is part of the input $list
+	    # Skip the node if one of its ancestors is part of the input $list
 	    # (and therefore already processed)
 	    my $parent = $node->xql_parent;
 	    while (defined $parent)
@@ -1208,6 +1329,12 @@ sub solve
 	    }
 	    recurse ($node, $new_list);
 	}
+	
+	# Sort the result list unless the parent Operator will sort
+#	my $parent = $self->{Parent};
+#	XML::XQL::sortDocOrder ($new_list) 
+#		unless defined ($parent) and $parent->mustSort;
+
 	$self->verbose ("result //", $self->{Right}->solve ($context, $new_list));
     }
 }
@@ -1230,6 +1357,86 @@ sub xql_contextString
 	"" : $self->{Left}->xql_contextString (@_);
 
     XML::XQL::delim ($str . XML::XQL::bold($self->{PathOp}) . 
+		     $self->{Right}->xql_contextString (@_), $self, @_);
+}
+
+sub xql_toDOM
+{
+    my ($self, $doc) = @_;
+    my $elem = $self->SUPER::xql_toDOM ($doc);
+    $elem->setAttribute ("pathOp", $self->{PathOp});
+    $elem;
+}
+
+package XML::XQL::Sequence;		# "elem;elem" or "elem;;elem"
+use vars qw( @ISA );
+@ISA = qw( XML::XQL::Operator );	# L -> L
+
+# See "The Design of XQL" by Jonathan Robie
+# <URL:http://www.texcel.no/whitepapers/xql-design.html>
+# for definition of Sequence operators.
+
+# Note that the "naive" implementation slows things down quite a bit here...
+sub solve
+{
+    my ($self, $context, $list) = @_;
+    my $left = $self->{Left}->solve ($context, $list);
+    $self->verbose ("left", $left);
+    return [] unless @$left;
+
+    my $right = $self->{Right}->solve ($context, $list);
+    $self->verbose ("right", $right);
+    return [] unless @$right;
+
+    my @result;
+    if ($self->{Oper} eq ';')	# immediately precedes
+    {
+	my %hleft; @hleft{@$left} = ();	# initialize all values to undef
+	my %pushed;
+
+	for my $r (@$right)
+	{
+	    # Find previous sibling that is not a text node that has only 
+	    # whitespace that can be ignored (because xml:space=preserve)
+	    my $prev = $r->xql_prevNonWS;
+	    # $prev must be defined and must exist in $left
+	    next unless $prev and exists $hleft{$prev};
+
+	    # Filter duplicates (no need to sort afterwards)
+	    push @result, $prev unless $pushed{$prev}++;
+	    push @result, $r unless $pushed{$r}++;
+	}
+    }
+    else	# oper eq ';;' (i.e. precedes)
+    {
+	my %pushed;
+
+	for my $r (@$right)
+	{
+	    for my $l (@$left)
+	    {
+		# If left node precedes right node, add them
+		if ($l->xql_sortKey lt $r->xql_sortKey)
+		{
+		    # Filter duplicates
+		    push @result, $l unless $pushed{$l}++;
+		    push @result, $r unless $pushed{$r}++;
+		}
+	    }
+
+#?? optimize - left & right are already sorted...
+	    # sort in document order
+	    XML::XQL::sortDocOrder (\@result) if @result;
+	}
+    }
+    \@result;
+}
+
+sub xql_contextString
+{
+    my $self = shift;
+    XML::XQL::delim ($self->{Left}->xql_contextString (@_) . 
+		     XML::XQL::bold($self->{Oper}) . 
 		     $self->{Right}->xql_contextString (@_), $self, @_);
 }
 
@@ -1314,6 +1521,19 @@ sub xql_contextString
     XML::XQL::delim ($str, $self, @_);
 }
 
+sub xql_toDOM
+{
+    my ($self, $doc) = @_;
+    my $elem = $self->SUPER::xql_toDOM ($doc);
+
+    my $name = $self->{Name};
+    my $space = $self->{NameSpace};
+    my $str = defined($space) ? "$space:$name" : $name;
+
+    $elem->setAttribute ("name", $str);
+    $elem;
+}
+
 package XML::XQL::Attribute;		# "@attr"
 use vars qw( @ISA );
 @ISA = qw( XML::XQL::Operator );	# L -> L of Attributes
@@ -1379,42 +1599,47 @@ use vars qw( @ISA );
 #?? optimize for simple subscripts
 sub solve
 {
-    my ($self, $context, $list) = @_;
-
-    $list = $self->{Left}->solve ($context, $list);
-    $self->verbose("Left", $list);
-
-    my $n = int (@$list);
-    return [] if ($n == 0);
-
-    # build ordered index list
-    my @indexFlags = ();
-    $#indexFlags = $n - 1;
-    
-    my $index = $self->{IndexList};
-    my $len = @$index;
-
-    my $i = 0;
-    while ($i < $len)
-    {
-	my $start = $index->[$i++];
-	$start += $n if ($start < 0);
-	my $end = $index->[$i++];
-	$end += $n if ($end < 0);
-
-	next unless $start <= $end && $end >=0 && $start < $n;
-	$start = 0 if ($start < 0);
-	$end = $n-1 if ($end >= $n);
-
-	for my $j ($start .. $end)
-	{
-	    $indexFlags[$j] = 1;
-	}
-    }
+    my ($self, $context, $inlist) = @_;
     my @result = ();
-    for $i (0 .. $n-1)
+
+    for my $node (@$inlist)
     {
-	push @result, $list->[$i] if $indexFlags[$i];
+
+	my $list = $self->{Left}->solve ($context, [$node]);
+	$self->verbose("Left", $list);
+
+	my $n = int (@$list);
+	next if ($n == 0);
+
+	# build ordered index list
+	my @indexFlags = ();
+	$#indexFlags = $n - 1;
+	
+	my $index = $self->{IndexList};
+	my $len = @$index;
+
+#?? this is done a lot - optimize....	
+	my $i = 0;
+	while ($i < $len)
+	{
+	    my $start = $index->[$i++];
+	    $start += $n if ($start < 0);
+	    my $end = $index->[$i++];
+	    $end += $n if ($end < 0);
+	    
+	    next unless $start <= $end && $end >=0 && $start < $n;
+	    $start = 0 if ($start < 0);
+	    $end = $n-1 if ($end >= $n);
+	    
+	    for my $j ($start .. $end)
+	    {
+		$indexFlags[$j] = 1;
+	    }
+	}
+	for $i (0 .. $n-1)
+	{
+	    push @result, $list->[$i] if $indexFlags[$i];
+	}
     }
     \@result;
 }
@@ -1438,6 +1663,28 @@ sub xql_contextString
     XML::XQL::delim ($self->{Left}->xql_contextString (@_) . $str, $self, @_);
 }
 
+sub xql_toDOM
+{
+    my ($self, $doc) = @_;
+    my $elem = $self->SUPER::xql_toDOM ($doc);
+
+    my $index = $self->{IndexList};
+    my $str = "";
+    for (my $i = 0; $i < @$index; $i++)
+    {
+	$str .= ", " if $i > 0;
+
+	my $s = $index->[$i++];
+	my $e = $index->[$i];
+	$str = ($s == $e) ? $s : "$s \$to\$ $e";
+    }
+
+    my $ie = $doc->createElement ("index");
+    $ie->setAttribute ("list", $str);
+    $elem->appendChild ($ie);
+    $elem;
+}
+
 package XML::XQL::Union;		# "book $union$ magazine", also "|"
 use vars qw( @ISA );
 @ISA = qw( XML::XQL::Operator );	# L x L -> L
@@ -1457,149 +1704,17 @@ sub solve
 	push @result, $node if XML::XQL::listContains ($right, $node);
     }
 
-    # Don't sort if parent is a Union, because then the parent will do the sort
+    # Don't sort if parent is a Union or //, because the parent will do the sort
     my $parent = $self->{Parent};
-    if (defined $parent and $parent->isa ('XML::XQL::Union'))
-    {
-	\@result;
-    }
-    else
-    {
-	sortBySrcNode (\@result, scalar(@$left));
-    }
+    XML::XQL::sortDocOrder (\@result)
+	unless (defined $parent and $parent->mustSort);
+
+    \@result;
 }
 
-# Sort the list by 'document order' (as per the XQL spec.)
-# Values with an associated source node are sorted by the position of their 
-# source node in the XML document.
-# Values without a source node are placed at the end of the resulting list.
-# The source node of an Attribute node, is its (parent) Element node 
-# (per definition.) The source node of the other types of XML nodes, is itself.
-# The order for values with the same source node is undefined.
-
-my %SortKey = ();
-
-sub sortBySrcNode
+sub mustSort
 {
-    # Assuming 0 .. n-1 is sorted and n .. @$list-1 is sorted
-    my ($list, $n) = @_;
-
-    my @left = ();
-    my @right = ();
-    my @noSrcNodes = ();
-    my $i = 0;
-    my ($node, $srcNode);
-
-#    print "sort n=$n list=" .XML::XQL::d($list) . "\n";
-
-    # Split the left section into @left (those values with source nodes)
-    # and @noSrcNodes.
-    while ($i < $n)
-    {
-	$node = $list->[$i++];
-	$srcNode = $node->xql_sourceNode;
-	if (defined $srcNode and defined $srcNode->xql_document)
-	{
-	    push @left, [$node, $srcNode];
-	}
-	else
-	{
-	    push @noSrcNodes, $node;
-	}
-    }
-    # Split the right section into @right (those values with source nodes)
-    # and @noSrcNodes.
-    my $m = @$list;
-    while ($i < $m)
-    {
-	$node = $list->[$i++];
-	$srcNode = $node->xql_sourceNode;
-	if (defined $srcNode and defined $srcNode->xql_document)
-	{
-	    push @right, [$node, $srcNode];
-	}
-	else
-	{
-	    push @noSrcNodes, $node;
-	}
-    }
-
-    if (@right < 1)
-    {
-	@left = map { $_ = $_->[0]; } @left;
-	push @left, @noSrcNodes;
-	\@left;
-    }
-    elsif (@left < 1)
-    {
-	@right = map { $_ = $_->[0]; } @right;
-	push @right, @noSrcNodes;
-	\@right;
-    }
-    else	# sort combined (@left,@right) by source node
-    {
-	push @left, @right;
-
-	# Prepare sort indices
-	my $doc = $left[0]->[0]->xql_document;
-
-#?? optimize - can we keep the sort keys for several queries?
-#?? must reset %SortKey, when XML document is modified
-	%SortKey = ();
-	$SortKey{$doc} = ["", "%s%s%0" . length ($doc->xql_childCount) . "d" ];
-
-	for my $z (@left)
-	{
-	    $z->[1] = genSortKey ($z->[1])->[0];
-	}
-	@left = sort { $a->[1] cmp $b->[1] } @left;
-
-#	printSortResult (@left);
-
-	@left = map { $_ = $_->[0] } @left;
-	push @left, @noSrcNodes;
-	\@left;
-    }
-}
-
-# Debugging method
-sub printSortResult
-{
-    my $i = 0;
-    for my $n (@_)
-    {
-	print "[$i] " . $n->[1] . " node=" . $n->[0] . "\n"; 
-	$i++;
-    }
-}
-
-# Generates a sort key for the source node, so the XQL values can be sorted
-# by source node (see sortBySrcNode)
-sub genSortKey
-{
-    my ($node) = @_;
-    my $key = $SortKey{$node};
-    unless (defined $key)
-    {
-	my $parent = $node->xql_parent;
-	my $paKey = genSortKey ($parent);
-	if ($node->xql_nodeType == 2)		# 2: Attr node
-	{
-	    # Give Attribute nodes a '!' before their index, so they come 
-	    # after their parent Element and before their parent's subelements.
-	    $key = $SortKey{$node} = [ 
-		sprintf ($paKey->[1], $paKey->[0], '!', $node->xql_attrIndex), 
-		"" ];
-	    # (Note: Attr nodes don't have children)
-	}
-	else
-	{
-	    $key = $SortKey{$node} = [
-		sprintf ($paKey->[1], $paKey->[0], '', $node->xql_childIndex),
-		"%s%s%0" . length ($node->xql_childCount) . "d" ]
-	}
-    }
-    $key;
+    1;
 }
 
 sub xql_contextString
@@ -1627,6 +1742,7 @@ sub solve
     my @result = ();
     for my $node (@$left)
     {
+#? reimplement with hash - faster!
 	push @result, $node if XML::XQL::listContains ($right, $node);
     }
     \@result;
@@ -1646,20 +1762,25 @@ use vars qw( @ISA );
 
 sub solve
 {
-    my ($self, $context, $list) = @_;
-    $list = $self->{Left}->solve ($context, $list);
-    return [] if @$list < 1;
-
-    my $subQuery = $self->{Right};
+    my ($self, $context, $inlist) = @_;
     my @result = ();
 
-    $context = [0, scalar (@$list)];
-    for my $node (@$list)
+    for my $node (@$inlist)
     {
+
+	my $list = $self->{Left}->solve ($context, [$node]);
+	next if @$list == 0;
+	
+	my $subQuery = $self->{Right};
+	
+	$context = [0, scalar (@$list)];
+	for my $node (@$list)
+	{
 #?? optimize? only need the first one to succeed
-	my $r = $subQuery->solve ($context, [ $node ]);
-	push @result, $node if XML::XQL::toBoolean ($r);
-	$context->[0]++;
+	    my $r = $subQuery->solve ($context, [ $node ]);
+	    push @result, $node if XML::XQL::toBoolean ($r);
+	    $context->[0]++;	# increase the index for the index() method
+	}
     }
     \@result;
 }
@@ -1877,6 +1998,7 @@ sub ancestor
     return [] if @$list == 0;
  
     my @anc = ();
+#?? fix for @$list > 1
     my $parent = $list->[0]->xql_parent;
 
     while (defined $parent)
@@ -1903,7 +2025,14 @@ sub node
     my ($context, $list) = @_;
 
     return [] if @$list == 0;
-    $list->[0]->xql_node;
+    return $list->[0]->xql_node if @$list == 1;
+
+    my @result;
+    for my $node (@$list)
+    {
+	push @result, @{ $node->xql_node };
+    }
+    XML::XQL::sortDocOrder (\@result);
 }
 
 sub _nodesByType
@@ -1912,27 +2041,30 @@ sub _nodesByType
 
     return [] if @$list == 0;
 
-    my @pi = ();
-    for my $node (@{$list->[0]->xql_node})
+    my @result;
+    for my $node (@$list)
     {
-	push @pi, $node if $node->xql_nodeType == $type;
+	for my $kid (@{ $node->xql_node })
+	{
+	    push @result, $kid if $kid->xql_nodeType == $type;
+	}
     }
-    \@pi;
+    @$list > 1 ? XML::XQL::sortDocOrder (\@result) : \@result;
 }
 
 sub pi
 {
-    $_[0]->_nodesByType ($_[2], 7);
+    _nodesByType ($_[1], 7);
 }
 
 sub comment
 {
-    $_[0]->_nodesByType ($_[2], 8);
+    _nodesByType ($_[1], 8);
 }
 
 sub textNode
 {
-    $_[0]->_nodesByType ($_[2], 3);
+    _nodesByType ($_[1], 3);
 }
 
 sub nodeName
@@ -1941,7 +2073,12 @@ sub nodeName
 
     return [] if @$list == 0;
 
-    new XML::XQL::Text ($list->[0]->xql_nodeName, $list->[0]);
+    my @result;
+    for my $node (@$list)
+    {
+	push @result, new XML::XQL::Text ($node->xql_nodeName, $node);
+    }
+    \@result;
 }
 
 sub namespace
@@ -1950,10 +2087,14 @@ sub namespace
 
     return [] if @$list == 0;
 
-    my $namespace = $list->[0]->xql_namespace;
-    return [] unless defined $namespace;
-
-    new XML::XQL::Text ($namespace, $list->[0]);
+    my @result;
+    for my $node (@$list)
+    {
+	my $namespace = $node->xql_namespace;
+	next unless defined $namespace;
+	push @result, new XML::XQL::Text ($namespace, $node);
+    }
+    \@result;
 }
 
 sub prefix
@@ -1962,10 +2103,14 @@ sub prefix
 
     return [] if @$list == 0;
 
-    my $prefix = $list->[0]->xql_prefix;
-    return [] unless defined $prefix;
-
-    new XML::XQL::Text ($prefix, $list->[0]);
+    my @result;
+    for my $node (@$list)
+    {
+	my $prefix = $node->xql_prefix;
+	next unless defined $prefix;
+	push @result, new XML::XQL::Text ($prefix, $node);
+    }
+    \@result;
 }
 
 sub baseName
@@ -1974,10 +2119,14 @@ sub baseName
 
     return [] if @$list == 0;
 
-    my $basename = $list->[0]->xql_baseName;
-    return [] unless defined $basename;
-
-    new XML::XQL::Text ($basename, $list->[0]);
+    my @result;
+    for my $node (@$list)
+    {
+	my $basename = $node->xql_baseName;
+	next unless defined $basename;
+	push @result, new XML::XQL::Text ($basename, $node);
+    }
+    \@result;
 }
 
 sub nodeType
@@ -1986,7 +2135,12 @@ sub nodeType
 
     return [] if @$list == 0;
 
-    new XML::XQL::Number ($list->[0]->xql_nodeType, $list->[0]);
+    my @result;
+    for my $node (@$list)
+    {
+	push @result, new XML::XQL::Number ($node->xql_nodeType, $node);
+    }
+    \@result;
 }
 
 sub nodeTypeString
@@ -1995,7 +2149,12 @@ sub nodeTypeString
 
     return [] if @$list == 0;
 
-    new XML::XQL::Text ($list->[0]->xql_nodeTypeString, $list->[0]);
+    my @result;
+    for my $node (@$list)
+    {
+	push @result, new XML::XQL::Text ($node->xql_nodeTypeString, $node);
+    } 
+    @result;
 }
 
 sub value
@@ -2004,7 +2163,12 @@ sub value
 
     return [] if @$list == 0;
 
-    $list->[0]->xql_value;	# value always returns an object
+    my @result;
+    for my $node (@$list)
+    {
+	push @result, $node->xql_value;	# value always returns an object
+    }
+    \@result;
 }
 
 sub text
@@ -2022,11 +2186,15 @@ sub text
 	$recurse = 1;		# default
     }
 
-    my $node = $list->[0];
-    my $text = $node->xql_text ($recurse);
-    return [] unless defined $text;
-
-    new XML::XQL::Text ($text, $node);
+    my @result;
+    for my $node (@$list)
+    {
+	my $text = $node->xql_text ($recurse);
+	next unless defined $text;
+	
+	push @result, new XML::XQL::Text ($text, $node);
+    }
+    \@result;
 }
 
 sub rawText
@@ -2044,11 +2212,15 @@ sub rawText
 	$recurse = 1;		# default
     }
 
-    my $node = $list->[0];
-    my $text = $node->xql_rawText ($recurse);
-    return [] unless defined $text;
-
-    new XML::XQL::Text ($text, $node);
+    my @result;
+    for my $node (@$list)
+    {
+	my $text = $node->xql_rawText ($recurse);
+	next unless defined $text;
+	
+	push @result, new XML::XQL::Text ($text, $node);
+    }
+    \@result;
 }
 
 sub true
@@ -2069,18 +2241,23 @@ sub element
 
     return [] if @$list == 0;
 
-    my $node = $list->[0];
-    return [] unless defined $node;
-
+    my @result;
     if (defined $text)
     {
 	$text = XML::XQL::prepareRvalue ($text->solve ($context, $list))->xql_toString;
-	$node->xql_element ($text);
+	for my $node (@$list)
+	{
+	    push @result, @{$node->xql_element ($text)};
+	}
     }
     else
     {
-	$node->xql_element;
+	for my $node (@$list)
+	{
+	    push @result, @{$node->xql_element};
+	}
     }
+    @$list > 1 ? XML::XQL::sortDocOrder (\@result) : \@result;
 }
 
 sub attribute
@@ -2089,18 +2266,23 @@ sub attribute
 
     return [] if @$list == 0;
 
-    my $node = $list->[0];
-    return [] unless defined $node and $node->xql_nodeType == 1;  # 1: element
-
+    my @result;
     if (defined $text)
     {
 	$text = XML::XQL::prepareRvalue ($text->solve ($context, $list))->xql_toString;
-	$node->xql_attribute ($text);
+	for my $node (@$list)
+	{
+	    push @result, @{ $node->xql_attribute ($text) };
+	}
     }
     else
     {
-	$node->xql_attribute;
+	for my $node (@$list)
+	{
+	    push @result, @{ $node->xql_attribute };
+	}
     }
+    \@result;
 }
 
 package XML::XQL::Bang;
@@ -2260,6 +2442,11 @@ sub xql_prepCache
 {
 }
 
+sub xql_prevSibling
+{
+    undef;
+}
+
 # This method returns an integer that determines how values should be casted
 # for comparisons. If the left value (LHS) has a higher xql_primType, the
 # right value (RHS) is cast to the type of the LHS (otherwise, the LHS is casted
@@ -2295,6 +2482,22 @@ sub xql_baseName
 sub xql_prefix
 {
     undef;
+}
+
+sub xql_sortKey
+{
+    my $src = $_[0]->xql_sourceNode;
+    $src ? $src->xql_sortKey : $XML::XQL::LAST_SORT_KEY;
+}
+
+sub xql_toDOM
+{
+    my ($self, $doc) = @_;
+    my $name = ref $self;
+    $name =~ s/.*:://;
+    my $elem = $doc->createElement ($name);
+    $elem->setAttribute ("value", $self->xql_toString);
+    $elem;
 }
 
 package XML::XQL::PrimitiveType;
@@ -2475,8 +2678,6 @@ sub xql_compare
 	$self->[0] cmp $other->xql_toString;
     }
 }
-
-require XML::XQL::Date;
 
 # Declare package XML::XQL::Node so that XML implementations can say
 # that their nodes derive from it:
@@ -2788,7 +2989,7 @@ XML::XQL - A perl module for querying XML tree structures with XQL
  @result = $query->solve ($doc);
 
  # Or (to save some typing)
- @result = XML::XQL::Query::solve ("book/title", $doc);
+ @result = XML::XQL::solve ("book/title", $doc);
 
 =head1 DESCRIPTION
 
@@ -2835,6 +3036,15 @@ add it to this module.
 =head1 XML::XQL global functions
 
 =over 4
+
+=item solve (QUERY_STRING, INPUT_LIST...)
+
+ @result = XML::XQL::solve ("doc//book", $doc);
+
+This is provided as a shortcut for:
+
+ $query = new XML::XQL::Query (Expr => "doc//book");
+ @result = $query->solve ($doc);
 
 =item defineFunction (NAME, FUNCREF, ARGCOUNT [, ALLOWED_OUTSIDE [, CONST, [QUERY_ARG]]])
 
@@ -3018,6 +3228,19 @@ See 'XML::XQL Global functions' for details.
 Another way to define these features for a particular Query is by passing the
 appropriate values to the XML::XQL::Query constructor.
 
+=over 4
+
+=item solve (INPUT_LIST...)
+
+Note that solve takes a list of nodes which are assumed to be in document order
+and must belong to the same document. E.g:
+
+ $query = new XML::XQL::Query (Expr => "doc//book");
+ @result = $query->solve ($doc);
+ @result2 = $query->solve ($node1, $node2, $node3);
+
+=back
+
 =head1 XML::XQL::Query constructor
 
 Usage, e.g:
@@ -3122,6 +3345,14 @@ Beware that the key 'Tree' is used internally.
 
 =over 4
 
+=item Sequence operators ';' and ';;'
+
+The sequence operators ';' (precedes) and ';;' (immediately precedes) are
+not in the XQL spec, but are described in 'The Design of XQL' by Jonathan Robie
+who is one of the designers of XQL. It can be found at
+http://www.texcel.no/whitepapers/xql-design.html
+See also the XQL Tutorial for a description of what they mean.
+
 =item q// and qq// String Tokens
 
 String tokens a la q// and qq// are allowed. q// evaluates like Perl's single 
@@ -3200,8 +3431,8 @@ See also L<Constant Function Invocations>
 
 =item Function: subst (QUERY, EXPR, EXPR [,MODIFIERS, [MODE]])
 
-E.g. 'subst(book/title, "[M|m]oby", "Dick", "g")' will substitute Moby or moby
-for Dick globally ("g") in all book title elements. Underneath it uses Perl's
+E.g. 'subst(book/title, "[M|m]oby", "Dick", "g")' will replace Moby or moby
+with Dick globally ("g") in all book title elements. Underneath it uses Perl's
 substitute operator s///. Don't worry about which delimiters are used underneath.
 The function returns all the book/titles for which a substitution occurred.
 The default MODIFIERS string is "" (empty.) The function name may be abbreviated 
@@ -3229,8 +3460,8 @@ cases, but since I'm not a professional psychic... :-)
 
 =item Function: map (QUERY, CODE)
 
-E.g. 'map(book/title, "s/[M|m]oby/Dick/g; $_")' will substitute Moby or moby
-for Dick globally ("g") in all book title elements. Underneath it uses Perl's
+E.g. 'map(book/title, "s/[M|m]oby/Dick/g; $_")' will replace Moby or moby
+with Dick globally ("g") in all book title elements. Underneath it uses Perl's
 map operator. The function returns all the book/titles for which a 
 change occurred.
 
@@ -3280,7 +3511,11 @@ should be a single value: atan2, rand, srand, sprintf, rename, unlink, system.
 The function result is casted to the appropriate XQL primitive type (Number, 
 Text or Boolean), or to an empty list if the result was undef.
 
+=back
+
 =head1 Implementation Details
+
+=over 4
 
 =item XQL Builtin Data Types
 
@@ -3422,6 +3657,8 @@ See text().
 =head1 SEE ALSO
 
 The XQL spec at http://www.w3.org/TandS/QL/QL98/pp/xql.html
+
+The Design of XQL at http://www.texcel.no/whitepapers/xql-design.html
 
 The DOM Level 1 specification at http://www.w3.org/TR/REC-DOM-Level-1
 

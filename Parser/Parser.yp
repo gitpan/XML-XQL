@@ -1,3 +1,4 @@
+%left SeqOp
 %left 'or'
 %left 'and'
 %left 'not'
@@ -12,7 +13,7 @@
 
 %%
 
-Query:		Disjunction
+Query:		Sequence
 		;
 
 WildNCName:	NCName | '*'
@@ -55,6 +56,12 @@ Invocation_3:	/* empty */ { [] }
 		;
 
 PathOp:		'/' | '//'
+		;
+
+Sequence:	Disjunction
+		| Disjunction SeqOp Sequence {
+		    new XML::XQL::Sequence (Left => $_[1], Oper => $_[2], 
+					    Right => $_[3]); }
 		;
 
 Disjunction:	Conjunction 
@@ -174,11 +181,12 @@ Filter:		Grouping
 			new XML::XQL::Filter (Left => $_[1], Right => $_[3]); }
 		;
 
-Subquery:	Disjunction
+#?? Eliminate Subquery
+Subquery:	Query
 		;
 
 Grouping:	RelativeTerm 
-		| '(' Disjunction ')'	 { $_[2]; }
+		| '(' Query ')'	 { $_[2]; }
 		;
 
 RelativeTerm:	'.' { new XML::XQL::Current; }

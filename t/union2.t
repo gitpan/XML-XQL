@@ -28,7 +28,7 @@ sub assert_output
 
 $dom = new XML::DOM::Parser;
 
-my $doc = $dom->parsefile ("samples/bookstore.xml");
+my $doc = $dom->parsefile (XML::XQL::Debug::filename("samples/bookstore.xml"));
 assert_ok ($doc); 
 
 @result = XML::XQL::solve ('//book/(@style | title | price | price/@exchange | price/@intl)', $doc);

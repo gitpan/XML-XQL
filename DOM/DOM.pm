@@ -25,6 +25,45 @@ BEGIN
 
 package XML::DOM::Node;
 
+sub xql_sortKey
+{
+    my $key = $_[0]->{SortKey};
+    return $key if defined $key;
+
+    $key = XML::XQL::createSortKey ($_[0]->{Parent}->xql_sortKey, 
+				    $_[0]->xql_childIndex, 1);
+#print "xql_sortKey $_[0] ind=" . $_[0]->xql_childIndex . " key=$key str=" . XML::XQL::keyStr($key) . "\n";
+    $_[0]->{SortKey} = $key;
+}
+
+# Find previous sibling that is not a text node with ignorable whitespace
+sub xql_prevNonWS
+{
+    my $self = shift;
+    my $parent = $self->{Parent};
+    return unless $parent;
+
+    for (my $i = $parent->getChildIndex ($self) - 1; $i >= 0; $i--)
+    {
+	my $node = $parent->getChildAtIndex ($i);
+	return $node unless $node->xql_isIgnorableWS;	# skip whitespace
+    }
+    undef;
+}
+
+# True if it's a Text node with just whitespace and xml::space != "preserve"
+sub xql_isIgnorableWS
+{
+    0;
+}
+
+# Whether the node should preserve whitespace
+# It should if it has attribute xml:space="preserve"
+sub xql_preserveSpace
+{
+    $_[0]->{Parent}->xql_preserveSpace;
+}
+
 sub xql_element
 {
 #?? I wonder which implemention is used for e.g. DOM::Text, since XML::XQL::Node also has an implementation
@@ -88,7 +127,17 @@ package XML::DOM::Element;
 
 sub xql_attribute
 {
-    $_[0]->{A}->getValues;
+    my ($node, $attrName) = @_;
+
+    if (defined $attrName)
+    {
+	my $attr = $node->getAttributeNode ($attrName);
+	defined ($attr) ? [ $attr ] : [];
+    }
+    else
+    {
+	$node->{A}->getValues;
+    }
 }
 
 # Used by XML::XQL::Union::genSortKey to generate sort keys
@@ -104,7 +153,7 @@ sub xql_element
 {
     my ($node, $elem) = @_;
 
-    my @list = ();
+    my @list;
     if (defined $elem)
     {
 	for my $kid (@{$node->{C}})
@@ -116,7 +165,7 @@ sub xql_element
     {
 	for my $kid (@{$node->{C}})
 	{
-	    push @list, $kid if $kid->isElementNode;
+	    push @list, $kid if exists $kid->{TagName}; # $kid->isElementNode;
 	}
     }
     \@list;
@@ -124,19 +173,19 @@ sub xql_element
 
 sub xql_nodeName
 {
-    $_[0]->getNodeName;
+    $_[0]->{TagName};
 }
 
 sub xql_baseName
 {
-    my $name = $_[0]->getNodeName;
+    my $name = $_[0]->{TagName};
     $name =~ s/^\w*://;
     $name;
 }
 
 sub xql_prefix
 {
-    my $name = $_[0]->getNodeName;
+    my $name = $_[0]->{TagName};
     $name =~ /([^:]+):/;
     $1;
 }
@@ -168,7 +217,7 @@ sub xql_text
     $recurse = 1 unless defined $recurse;
 
     my $j = -1;
-    my @text = ();
+    my @text;
     my $last_was_text = 0;
 
     # Collect text blocks. Consecutive blocks of Text, CDataSection and 
@@ -203,7 +252,9 @@ sub xql_text
     my $n = @text;
     while ($i < $n)
     {
-	$text[$i] = XML::XQL::trimSpace ($text[$i]);
+	# similar to XML::XQL::trimSpace
+	$text[$i] =~ s/^\s+//;
+	$text[$i] =~ s/\s+$//;
 
 	if ($text[$i] eq "")
 	{
@@ -235,7 +286,7 @@ sub xql_rawTextBlocks
 {
     my ($self) = @_;
 
-    my @result = ();
+    my @result;
     my $curr;
     my $prevWasText = 0;
     my $kids = $self->{C};
@@ -296,7 +347,23 @@ sub xql_value
     XML::XQL::elementValue ($_[0]);
 }
 
+sub xql_preserveSpace
+{
+    # attribute value should be "preserve" (1), "default" (0) or "" (ask parent)
+    my $space = $_[0]->getAttribute ("xml:space");
+    $space eq "" ? $_[0]->{Parent}->xql_preserveSpace : ($space eq "preserve");
+}
+
 package XML::DOM::Attr;
+
+sub xql_sortKey
+{
+    my $key = $_[0]->{SortKey};
+    return $key if defined $key;
+
+    $_[0]->{SortKey} = XML::XQL::createSortKey ($_[0]->xql_parent->xql_sortKey, 
+						$_[0]->xql_childIndex, 0);
+}
 
 sub xql_nodeName
 {
@@ -342,7 +409,7 @@ sub xql_parent
     $_[0]->{UsedIn}->{''}->{Parent};
 }
 
-sub xql_attrIndex
+sub xql_childIndex
 {
     my $map = $_[0]->{UsedIn};
     $map ? $map->getChildIndex ($_[0]) : 0;
@@ -363,6 +430,12 @@ sub xql_text
 sub xql_setValue
 {
     $_[0]->setData ($_[1]);
+}
+
+sub xql_isIgnorableWS
+{
+    $_[0]->{Data} =~ /^\s*$/ &&
+    !$_[0]->xql_preserveSpace;
 }
 
 package XML::DOM::CDATASection;
@@ -411,11 +484,16 @@ sub xql_nodeType
 
 package XML::DOM::Document;
 
+sub xql_sortKey
+{
+    "";
+}
+
 sub xql_element
 {
     my ($node, $elem) = @_;
 
-    my @list = ();
+    my @list;
     if (defined $elem)
     {
 	for my $kid (@{$node->{C}})
@@ -438,18 +516,24 @@ sub xql_parent
     undef;
 }
 
+# By default the elements in a document don't preserve whitespace
+sub xql_preserveSpace
+{
+    0;
+}
+
 package XML::DOM::DocumentFragment;
 
 sub xql_element
 {
-    my ($node, $elem) = @_;
+    my ($node, $elemName) = @_;
 
-    my @list = ();
-    if (defined $elem)
+    my @list;
+    if (defined $elemName)
     {
 	for my $kid (@{$node->{C}})
 	{
-	    push @list, $kid if $kid->isElementNode && $kid->{TagName} eq $elem;
+	    push @list, $kid if $kid->isElementNode && $kid->{TagName} eq $elemName;
 	}
     }
     else

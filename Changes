@@ -1,7 +1,44 @@
+0.60 (enno) 3/19/1999
+- Fixed $lt$ and $ilt$ (operator '<' was working fine)
+  (Thanks again, Ingo)
+- Implemented ';;' (precedes) and ';' (immediately precedes) operators.
+  - Added test cases t/precedes.t and t/immediately_precedes.t
+  - Updated docs.
+- Fixed dependancies in Makefile.PL. Date::Manip 5.20 (or less) won't work and
+  XML::DOM 1.11 won't work. Since I was using Date::Manip 5.33, I now require
+  you to do the same. If you don't want to switch, you're free to change the
+  version number in Makefile.PL, but I wouldn't recommend it.
+  (Thanks to Andrew McNaughton <andrew@squiz.co.nz>)
+- Reimplemented code that sorts nodes in document order.
+- Fixed bugs in subscript and filter operators (the ones with square brackets)
+  - Added testcases t/subscript2.t and t/index2.t
+  - In the subscript2 and index2 testcases only the first node was returned
+  (Thanks to Christophe Guillon <christophe.guillon@st.com>)
+- Fixed all MacOS related build problems. (Those pesky newlines...)
+  (Thanks to Arved Sandstrom for helping to fix them.)
+
+0.59 (enno) 2/15/1999
+- Performance improvement:
+  - Removed automatic inclusion of XML::XQL::Date. Users must now explicitly
+    'use XML::XQL::Date;' if they want to use date() or Date objects.
+  - Performance analysis showed that about 75% was spent building the DOM
+    (with DOM 1.14), so let's optimize the DOM further first...
+- Fixed typos and grammar in the XML::XQL POD and Tutorial.
+  (Thanks to John Durand <jrd@oz.net>)
+- Fixed the collection functions: comment(), element() etc. They would throw
+  exceptions like "Can't call method "_nodesByType" on an undefined value..."
+  (Thanks to Ingo Macherius <macherius@darmstadt.gmd.de>)
+- Added t/comment.t test case.
+- Made most XQL functions process the entire list of input nodes, rather than
+  just the first one. This allows queries like "//comment()".
+- Fixed bug in 'sort in document order' (sortBySrcNode) 
+  This was used by $union$ and now also by collection functions.
+- Fixed attribute() function. It ignored the optional parameter.
+
 0.58 (enno) 1/25/1999
 - Fixed bug in text() for Element nodes. It would sometimes omit the contents
   of certain text nodes when merging text within an Element node.
-  (Thanks to Marcin Jagodzinski at marcinj@quake.org.pl)
+  (Thanks to Marcin Jagodzinski <marcinj@quake.org.pl>)
 - text(0) and rawText(0) for Element nodes would include child Element nodes
   (contrary to the POD documentation)
 - Added t/text.t test case.
@@ -9,14 +46,14 @@
 0.57 (enno) 1/22/1999
 - Fixed code related to sorting in document order when the node list contains
   Attribute nodes.
-  (Thanks to Martin Virtel at virtel@zeit.de)
+  (Thanks to Martin Virtel <virtel@zeit.de>)
 
 0.56 (enno) 1/20/1999
 - Fixed Subscript related code (e.g. for queries a la "//author[2]") and
   added testcase t/subscript.t
   It used to throw the following exception:
   "Can't call method "setParent" without a package or object reference..."
-  (Thanks to Arved Sandstrom at Arved_37@chebucto.ns.ca)
+  (Thanks to Arved Sandstrom <Arved_37@chebucto.ns.ca>)
 
 0.55 (enno) 1/13/1999
 - Added XML::DOM to dependancy list in Makefile.PL
@@ -26,7 +63,7 @@
 - Changed regexp "s/^(\s*|#.*)*//" to "s/^(\s|#.*)*//" to avoid error "regexp *+
   operand can be empty" with Perl 5.004_4
 - Removed build warnings a la 'Ambiguous use of ...' with Perl 5.004_4
-  (Thanks to Tony Hammond at tony_hammond@harcourtbrace.com)
+  (Thanks to Tony Hammond <tony_hammond@harcourtbrace.com>)
 
 0.53 (enno) 12/21/1998
 - Fixed Union operator (bug in sorting code)
@@ -69,4 +106,3 @@
 
 0.51 (enno) 12/7/1998
 - First alpha release. Announced to Perl-XML mailing list.
-

@@ -1,5 +1,30 @@
 package XML::XQL::Debug;
 
+# Replaces the filepath separator if necessary (i.e for Macs and Windows/DOS)
+sub filename
+{
+    my $name = shift;
+
+    if ((defined $^O and
+	 $^O =~ /MSWin32/i ||
+	 $^O =~ /Windows_95/i ||
+	 $^O =~ /Windows_NT/i) ||
+	(defined $ENV{OS} and
+	 $ENV{OS} =~ /MSWin32/i ||
+	 $ENV{OS} =~ /Windows_95/i ||
+	 $ENV{OS} =~ /Windows_NT/i))
+    {
+	$name =~ s!/!\\!g;
+    }
+    elsif  ((defined $^O and $^O =~ /MacOS/i) ||
+	    (defined $ENV{OS} and $ENV{OS} =~ /MacOS/i))
+    {
+	$name =~ s!/!:!g;
+	$name = ":$name";
+    }
+    $name;
+}
+
 sub dump
 {
     new XML::XQL::Debug::Dump->pr (@_);
@@ -9,6 +34,7 @@ sub str
 {
     my $dump = new XML::XQL::Debug::Dump;
     $dump->pr (@_);
+    $dump->{Str} =~ tr/\012/\n/;	# for MacOS where '\012' != '\n'
     $dump->{Str};
 }
 
